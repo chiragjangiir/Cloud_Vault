@@ -1,0 +1,453 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Drive</title>
+    <link rel="stylesheet" th:href="@{/css/homeStyle.css}"/>
+    <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          referrerpolicy="no-referrer" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #F7F9FC;
+            color: black;
+            padding: 10px 20px;
+            display: grid;
+            align-items: center;
+            height:7vh;
+            grid-template-columns:1fr 3fr 2fr 1fr;
+        }
+        .logoHead{
+        display:grid;
+        }
+        .logo{
+        width:30px;
+        height:30px
+        }
+        .googleHeading {
+            margin: 0;
+        }
+
+        form {
+            flex: 1;
+            margin: 0 20px;
+            display: flex;
+        }
+
+        button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #3498db;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+/* Hover effect */
+button:hover {
+  background-color: #2980b9;
+}
+
+        .search {
+            width: 50%;
+            padding: 8px;
+            background-color:#EDF2FC;
+            border:0px;
+            border-radius:20px;
+            box-sizing: border-box;
+            padding:15px
+        }
+
+        .searchButton {
+            background-color: #0f9d58;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+        }
+
+        .actions span {
+            cursor: pointer;
+        }
+        .folderColumn {
+            background-color: #F7F9FC;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .folderColumn a {
+            margin: 0;
+            padding: 10px;
+            cursor: pointer;
+            padding-top:30px;
+            transition: background-color 0.3s;
+        }
+
+        .folderColumn p:hover {
+            background-color: #D9D9D9;
+        }
+
+        .myDrive {
+            font-weight: bold;
+            color: #4285f4;
+        }
+        .parentBox{
+            display:grid;
+            grid-template-columns:1fr 6fr;
+        }
+        .box2{
+        padding:20px
+        }
+        .box2{
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+        border-radius:20px;
+        height: 100vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd; /* Border line between rows */
+        }
+
+        th {
+            background-color: #f2f2f2; /* Header background color */
+        }
+        tr:hover {
+            background-color: #f5f5f5; /* Hover background color */
+        }
+        form {
+            display: inline-block; /* Prevents the form from taking the full width */
+        }
+        .filter-options {
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+    }
+
+    /* Additional styles for form elements if needed */
+    .filter-options label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .filter-options input,
+    .filter-options select {
+        margin-bottom: 15px;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .filter-options button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+    .filter-options button:hover {
+        background-color: #45a049;
+    }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        /* Close button style */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logoHead">
+        <img class="logo"
+             src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Google_Drive_logo.png/2048px-Google_Drive_logo.png"/>
+        <h3 class="googleHeading">Drive</h3>
+    </div>
+    <form method="get" th:action="@{/search}">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input class="search" name="search" placeholder="Search" required th:value="${search}" type="text">
+        <input class="searchButton" type="submit" value="search">
+    </form>
+
+    <!-- Add the filter button -->
+    <button id="filterButton" style="width:25%" th:onclick="toggleFilterOptions()" type="button">Filter <i
+            class="fa-solid fa-filter"></i></button>
+
+    <!-- Add the filter form and options (hidden initially) -->
+    <div class="filter-options" id="filterOptions" style="display:none;">
+        <form id="filterForm" method="get" th:action="@{/filter}">
+            <!-- File size filter -->
+            <label for="minSize">Minimum File Size:</label>
+            <input id="minSize" name="minSize" placeholder="Enter minimum file size in bytes" type="number">
+
+            <label for="maxSize">Maximum File Size:</label>
+            <input id="maxSize" name="maxSize" placeholder="Enter maximum file size in bytes" type="number">
+
+            <!-- File name search -->
+            <label for="fileName">File Name:</label>
+            <input id="fileName" name="fileName" placeholder="Enter file name" type="text">
+
+            <!-- File type filter -->
+            <label for="fileType">File Type:</label>
+            <select id="fileType" name="fileType">
+                <option value="">None</option>
+                <option th:each="type : ${fileTypes}" th:text="${type}" th:value="${type}"></option>
+                <!-- Add other file types as needed -->
+            </select>
+
+            <!-- Apply and Cancel buttons -->
+            <button id="cancelFilterButton" th:onclick="cancelFilter()" type="button">Cancel</button>
+            <button th:onclick="applyFilter()" type="button">Apply</button>
+        </form>
+    </div>
+</nav>
+
+<div class="parentBox">
+    <div class="box1">
+        <div class="folderColumn">
+            <div th:each="parentFolder:${parentFolders}">
+                <br>
+                <a style="text-decoration: none;color:black;" th:href="'/'+${parentFolder.name}">
+                    <p th:text="${parentFolder.name}">
+                    </p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="box2">
+        <h2 th:text="'Welcome '+${userName}"></h2>
+        <h2 th:text="${parentFolderName}"></h2>
+        <div th:if="${user}==null">
+            <h2>Folders List</h2>
+            <form enctype="multipart/form-data" method="post" th:action="@{/uploadFolder}">
+                <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                <input multiple name="files" required type="file" webkitdirectory/>
+                <button type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Folder</button>
+            </form>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Open</th>
+                    <th>Trash</th>
+                    <th>Star</th>
+                    <th>Download</th>
+                    <th>share</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Iterate over the list of files and display information for each file -->
+                <tr th:each="folder : ${folders}">
+                    <td th:text="${folder.folderName}"></td>
+                    <td>
+                        <form method="GET" th:action="@{/openFolder}">
+                            <input name="folderId" th:value="${folder.id}" type="hidden">
+                            <input type="submit" value="open">
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" th:action="@{/moveFolderToTrash}">
+                            <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                            <input name="folderId" th:value="${folder.id}" type="hidden">
+                            <input type="submit" value="trash">
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" th:action="@{/starFolder}">
+                            <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                            <input name="folderId" th:value="${folder.id}" type="hidden">
+                            <input type="submit" value="STAR">
+                        </form>
+                    </td>
+                    <td>
+                        <form method="GET" th:action="@{/downloadFolder}">
+                            <input name="folderName" th:value="${folder.folderName}" type="hidden">
+                            <input type="submit" value="download">
+                        </form>
+                    </td>
+                    <td>
+                                <form id="shareForm2" method="POST" th:action="@{/shareFolder}">
+                                    <input id="fileIdInput2" name="folderId" th:value="${folder.id}" type="hidden">
+                                    <input id="email2" name="email" required type="email" placeholder="email">
+                                    <button type="submit">SHARE</button>
+                                </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="files">
+            <h2>Files List</h2>
+
+            <!-- Display error message if any -->
+            <p style="color: red;" th:if="${error}" th:text="${error}"></p>
+
+
+            <form enctype="multipart/form-data" method="post" th:action="@{/upload}" th:if="${user}==null">
+                <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                <input name="file" required type="file"/>
+                <button type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</button>
+            </form>
+
+            <form th:action="@{/}" th:if="${user}!=null">
+                <button type="submit">Back</button>
+            </form>
+
+            <!-- Display list of files -->
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>File Type</th>
+                    <th>File Size</th>
+                    <th>Upload Date</th>
+                    <th>Download</th>
+                    <th>Trash</th>
+                    <th>Star</th>
+                    <th>Share</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Iterate over the list of files and display information for each file -->
+                <tr th:each="file : ${files}">
+                    <td>
+                        <a target="_blank" th:href="@{'/openFile/' + ${file.id}}">
+                            <span th:text="${file.fileName}"></span>
+                        </a>
+                    </td>
+
+                    <td th:text="${file.fileType}"></td>
+                    <td th:text="${file.size}+' B'"></td>
+                    <td th:text="${#dates.format(file.uploadDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                    <td>
+                        <form method="GET" th:action="@{/downloadFile}">
+                            <input name="fileId" th:value="${file.id}" type="hidden">
+                            <input type="submit" value="download">
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" th:action="@{/moveFileToTrash}">
+                            <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                            <input name="fileId" th:value="${file.id}" type="hidden">
+                            <input type="submit" value="trash">
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" th:action="@{/starFile}">
+                            <input name="parentFolder" th:value="${parentFolderName}" type="hidden">
+                            <input name="fileId" th:value="${file.id}" type="hidden">
+                            <input type="submit" value="STAR">
+                        </form>
+                    </td>
+                    <td>
+                        <!-- Modal -->
+                            <form id="shareForm" method="POST" th:action="@{/shareFile}">
+                                <input id="fileIdInput" name="fileId" th:value="${file.id}" type="hidden">
+                                <input id="email" name="email" placeholder="email" required type="email">
+                                <button type="submit">SHARE</button>
+                            </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle the dropdown -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function toggleFilterOptions() {
+        var filterOptions = document.getElementById("filterOptions");
+        filterOptions.style.display = filterOptions.style.display === "none" ? "block" : "none";
+    }
+
+    function cancelFilter() {
+        toggleFilterOptions();
+    }
+
+    function applyFilter() {
+        toggleFilterOptions();
+        document.getElementById("filterForm").submit();
+    }
+    function openShareModal(fileId) {
+    document.getElementById("fileIdInput").value = fileId;
+            document.getElementById("shareFormModal").style.display = "block";
+        }
+
+        function closeShareModal() {
+            document.getElementById("shareFormModal").style.display = "none";
+        }
+         function openShareModal2(folderId) {
+            document.getElementById("shareFormModal2").style.display = "block";
+        }
+
+        function closeShareModal2() {
+            document.getElementById("shareFormModal2").style.display = "none";
+        }
+    /*]]>*/
+</script>
+
+</body>
+</html>
