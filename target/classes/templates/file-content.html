@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Content</title>
+</head>
+<body>
+<div>
+  <span th:each="file: ${files}">
+    <p><span th:text="${file.fileName}" /></p>
+  </span>
+<!--  <table>-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--      <th>Name</th>-->
+<!--      <th>File Type</th>-->
+<!--      <th>File Size</th>-->
+<!--      <th>Upload Date</th>-->
+<!--      <th>Download</th>-->
+<!--      <th>Trash</th>-->
+<!--      <th>Star</th>-->
+<!--      <th>Share</th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    &lt;!&ndash; Iterate over the list of files and display information for each file &ndash;&gt;-->
+<!--    <tr th:each="file : ${files}">-->
+<!--      <td>-->
+<!--        <a target="_blank" th:href="@{'/openFile/' + ${file.id}}">-->
+<!--          <span th:text="${file.fileName}"></span>-->
+<!--        </a>-->
+<!--      </td>-->
+
+<!--      <td th:text="${file.fileType}"></td>-->
+<!--      <td th:text="${file.size}+' KB'"></td>-->
+<!--      <td th:text="${#dates.format(file.uploadDate, 'yyyy-MM-dd HH:mm:ss')}"></td>-->
+<!--      <td>-->
+<!--        <form method="GET" th:action="@{/downloadFile}">-->
+<!--          <input name="fileId" th:value="${file.id}" type="hidden">-->
+<!--          <input type="submit" value="download">-->
+<!--        </form>-->
+<!--      </td>-->
+<!--      <td>-->
+<!--        <form method="POST" th:action="@{/moveFileToTrash}">-->
+<!--          <input name="parentFolder" th:value="${parentFolderName}" type="hidden">-->
+<!--          <input name="fileId" th:value="${file.id}" type="hidden">-->
+<!--          <input type="submit" value="trash">-->
+<!--        </form>-->
+<!--      </td>-->
+<!--      <td>-->
+<!--        <form method="POST" th:action="@{/starFile}">-->
+<!--          <input name="parentFolder" th:value="${parentFolderName}" type="hidden">-->
+<!--          <input name="fileId" th:value="${file.id}" type="hidden">-->
+<!--          <input type="submit" value="STAR">-->
+<!--        </form>-->
+<!--      </td>-->
+<!--      <td>-->
+<!--        <button onclick="openShareModal('${file.id}')">SHARE</button>-->
+
+<!--        &lt;!&ndash; Modal &ndash;&gt;-->
+<!--        <div class="modal" id="shareFormModal">-->
+<!--          <div class="modal-content">-->
+<!--            <span class="close" onclick="closeShareModal()">&times;</span>-->
+<!--            <form id="shareForm" method="POST" th:action="@{/shareFile}">-->
+<!--              <input id="fileIdInput" name="fileId" th:value="${file.id}" type="hidden">-->
+
+<!--              &lt;!&ndash; Email input field &ndash;&gt;-->
+<!--              <label for="email">Email:</label>-->
+<!--              <input id="email" name="email" required type="email">-->
+
+<!--              &lt;!&ndash; Share and Cancel buttons &ndash;&gt;-->
+<!--              <button type="submit">SHARE</button>-->
+<!--              <button onclick="closeShareModal()" type="button">CANCEL</button>-->
+<!--            </form>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </td>-->
+<!--    </tr>-->
+<!--    </tbody>-->
+<!--  </table>-->
+</div>
+</body>
+</html>

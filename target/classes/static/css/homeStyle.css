@@ -1,0 +1,149 @@
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #F7F9FC;
+            color: black;
+            padding: 10px 20px;
+            display: grid;
+            align-items: center;
+            height:7vh;
+            grid-template-columns:1fr 6fr 1fr;
+        }
+        .logoHead{
+        display:grid;
+        grid-template-columns:1fr 2fr;
+        }
+        .logo{
+        width:30px;
+        height:30px
+        }
+        .googleHeading {
+            margin: 0;
+        }
+
+        form {
+            flex: 1;
+            margin: 0 20px;
+            display: flex;
+        }
+
+        .search {
+            width: 50%;
+            padding: 8px;
+            background-color:#EDF2FC;
+            border:0px;
+            border-radius:20px;
+            box-sizing: border-box;
+            padding:15px
+        }
+
+        .searchButton {
+            background-color: white;
+            border-radius:15px;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+        }
+
+        .actions span {
+            cursor: pointer;
+        }
+        .folderColumn {
+            background-color: #F7F9FC;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .folderColumn p {
+            margin: 0;
+            padding: 10px;
+            cursor: pointer;
+            padding-top:30px;
+            transition: background-color 0.3s;
+        }
+
+        .folderColumn p:hover {
+            background-color: #f2f2f2;
+        }
+
+        .myDrive {
+            font-weight: bold;
+            color: #4285f4;
+        }
+        .parentBox{
+            display:grid;
+            grid-template-columns:1fr 6fr;
+        }
+        .box2{
+        padding:20px
+        }
+        .box2{
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+        border-radius:20px;
+        height: 100vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd; /* Border line between rows */
+        }
+
+        th {
+            background-color: #f2f2f2; /* Header background color */
+        }
+        tr:hover {
+            background-color: #f5f5f5; /* Hover background color */
+        }
+        form {
+            display: inline-block; /* Prevents the form from taking the full width */
+        }
+        dropdown-container {
+                    position: relative;
+                    display: inline-block;
+                }
+
+                /* Style for the button */
+                .dropdown-btn {
+                            background-color: #4CAF50;
+                            color: white;
+                            padding: 10px;
+                            border: none;
+                            cursor: pointer;
+                        }
+
+                        /* Style for the dropdown content */
+                        .dropdown-content {
+                            display: none;
+                            position: absolute;
+                            background-color: #f9f9f9;
+                            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                            z-index: 1;
+                        }
+
+                        /* Style for each dropdown item */
+                        .dropdown-item {
+                            padding: 10px;
+                            display: block;
+                            text-decoration: none;
+                            color: #333;
+                        }
+
+                        /* Change color on hover for dropdown items */
+                        .dropdown-item:hover {
+                            background-color: #ddd;
+                        }
