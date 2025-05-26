@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Vault - Login/Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            /* Google Brand Colors */
+            --color-brand-blue: #1A73E8; /* Google Blue */
+            --color-brand-blue-dark: #174EA6; /* Darker Google Blue */
+            --color-brand-green: #34A853;
+            --color-brand-red: #EA4335;
+
+            /* Light Mode Neutrals (Default) */
+            --color-neutral-bg: #FFFFFF; /* White background for the whole page */
+            --color-card-bg: #FFFFFF; /* Pure white for forms - consistent with neutral-bg */
+            --color-border: #DADCE0; /* Google's border color */
+            --color-text-header: #202124; /* Dark gray for main titles */
+            --color-text-body: #202124; /* Google's standard body text - dark */
+            --color-text-light: #5F6368; /* For subtle text/placeholders */
+            --color-input-text: #202124; /* Explicitly dark for input text */
+            --color-link: #1A73E8; /* Google blue for links */
+            --color-link-hover: #174EA6; /* Darker blue on hover */
+
+            /* Action/Status Colors */
+            --color-action-primary: var(--color-brand-blue);
+            --color-action-primary-hover: var(--color-brand-blue-dark);
+
+            /* Message Colors */
+            --color-success-bg: #E6F4EA;
+            --color-success-text: #1E8E3E;
+            --color-success-border: #81C995;
+            --color-error-bg: #FAD2CE;
+            --color-error-text: #D93025;
+            --color-error-border: #F28B82;
+
+            /* Shadows - subtle, Material Design style */
+            --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.302), 0 1px 3px 1px rgba(60,64,67,0.149);
+            --shadow-md: 0 4px 8px 3px rgba(60,64,67,0.15), 0 6px 10px 2px rgba(60,64,67,0.3);
+            --shadow-google-card: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+        }
+
+        /* Dark Mode Colors */
+        body.dark-mode {
+            --color-neutral-bg: #202124; /* Dark background */
+            --color-card-bg: #2C2C2C; /* Darker card background */
+            --color-border: #5F6368; /* Darker border, similar to text-light */
+            --color-text-header: #E8EAED; /* Light header text */
+            --color-text-body: #E8EAED; /* Lighter body text */
+            --color-text-light: #B0B0B0; /* Subtler light text */
+            --color-input-text: #E8EAED; /* Explicitly light for input text */
+            --color-link: #8AB4F8; /* Lighter blue for links in dark mode */
+            --color-link-hover: #639CFF; /* Slightly darker light blue on hover */
+
+            --color-action-primary: #8AB4F8; /* Light blue for primary button */
+            --color-action-primary-hover: #639CFF;
+
+            --color-success-bg: #283C2F;
+            --color-success-text: #81C995;
+            --color-success-border: #405A45;
+
+            --color-error-bg: #4A2B2A;
+            --color-error-text: #F28B82;
+            --color-error-border: #6F403D;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.5), 0 1px 3px 1px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px 3px rgba(0,0,0,0.3), 0 6px 10px 2px rgba(0,0,0,0.5);
+            --shadow-google-card: 0 1px 3px 0 rgba(0,0,0,0.3), 0 1px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--color-neutral-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            color: var(--color-text-body);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Google-like Container */
+        .container {
+            max-width: 450px;
+            width: 100%;
+            background-color: var(--color-card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow-google-card);
+            padding: 48px 40px 36px;
+            border: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            box-sizing: border-box;
+        }
+        @media (max-width: 500px) {
+            .container {
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                max-width: 100%;
+                width: 100%;
+                height: 100vh;
+                padding: 24px;
+            }
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .main-title {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--color-text-header);
+            margin-top: 0;
+            /* Adjust margin-bottom as subtitle is removed */
+            margin-bottom: 24px; /* More space after title since subtitle is gone */
+            display: block;
+        }
+        .main-title i {
+            display: none;
+        }
+        /* Subtitle CSS is no longer needed but kept for completeness */
+        .subtitle {
+            font-size: 1rem;
+            color: var(--color-text-body);
+            margin-top: 0;
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--color-brand-blue);
+            margin-bottom: 24px;
+            text-align: center;
+            display: block;
+        }
+        body.dark-mode .logo-text {
+            color: var(--color-link);
+        }
+        .logo-text i {
+             margin-right: 8px;
+             font-size: 1.5rem;
+        }
+
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        label {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 15px;
+            pointer-events: none;
+            color: var(--color-text-light);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            padding: 0;
+            margin: 0;
+            z-index: 1;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 1rem;
+            color: var(--color-input-text);
+            background-color: var(--color-card-bg);
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--color-brand-blue);
+            box-shadow: 0 0 0 1px var(--color-brand-blue);
+        }
+
+        /* Label animation on focus/filled */
+        input[type="text"]:focus + label,
+        input[type="password"]:focus + label,
+        input.has-value + label {
+            top: 0;
+            transform: translateY(-50%) scale(0.75);
+            font-size: 0.75rem;
+            color: var(--color-brand-blue);
+            background-color: var(--color-card-bg);
+            padding: 0 4px;
+            left: 10px;
+            transform-origin: 0 50%;
+        }
+        body.dark-mode input[type="text"]:focus + label,
+        body.dark-mode input[type="password"]:focus + label,
+        body.dark-mode input.has-value + label {
+            color: var(--color-link);
+            background-color: var(--color-card-bg);
+        }
+
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            margin-bottom: 0;
+        }
+        .form-actions button {
+            width: auto;
+            min-width: 96px;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+        .form-actions .btn-primary {
+             margin-left: auto;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--color-link);
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            text-decoration: none;
+            width: auto;
+            box-shadow: none;
+            margin-left: 0;
+        }
+        .btn-link:hover {
+            color: var(--color-link-hover);
+            text-decoration: underline;
+            background: none;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            font-weight: 400;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: none;
+            border: 1px solid;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .message i {
+            font-size: 1rem;
+        }
+
+        /* Dark Mode Toggle Button specific styles */
+        .dark-mode-toggle-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: transparent;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--color-text-light);
+            transition: color 0.3s ease, background-color 0.3s ease;
+            box-shadow: none;
+        }
+        .dark-mode-toggle-btn:hover {
+            background-color: var(--color-neutral-bg);
+            color: var(--color-text-body);
+            box-shadow: none;
+        }
+        body.dark-mode .dark-mode-toggle-btn:hover {
+            background-color: #3A3A3A;
+            color: var(--color-text-header);
+        }
+
+        /* Adjustments for the form-heading when in Google-like style */
+        #loginForm .form-heading,
+        #registerForm .form-heading {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top-section">
+        <span class="logo-text"><i class="fas fa-cloud-upload-alt"></i> Cloud Vault</span>
+        <div th:if="${successMessage}" class="message success-message">
+            <i class="fas fa-check-circle"></i>
+            <p th:text="${successMessage}"></p>
+        </div>
+        <div th:if="${errorMessage}" class="message error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <p th:text="${errorMessage}"></p>
+        </div>
+
+        <div id="loginForm">
+            <h1 class="main-title">Sign in</h1>
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <input type="text" id="loginUsername" name="username" placeholder=" " required autocomplete="username">
+                    <label for="loginUsername">Email or phone</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" name="password" placeholder=" " required autocomplete="current-password">
+                    <label for="loginPassword">Password</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-link" onclick="alert('Forgot password functionality not implemented.');">Forgot password?</button>
+                    <button type="submit" class="btn-primary">Next</button>
+                </div>
+            </form>
+            <p class="toggle-form">
+                Not your computer? Use a private Browse window to sign in. <a href="#">Learn more</a>
+            </p>
+            <p class="toggle-form">
+                <a href="#" onclick="showRegisterForm()">Create account</a>
+            </p>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <h1 class="main-title">Create your Cloud Vault Account</h1>
+            <form th:action="@{/register}" method="post">
+                <div class="form-group">
+                    <input type="text" id="registerUsername" name="username" placeholder=" " required autocomplete="new-username">
+                    <label for="registerUsername">Username</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" name="password" placeholder=" " required autocomplete="new-password">
+                    <label for="registerPassword">Password</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-link" onclick="showLoginForm()">Sign in instead</button>
+                    <button type="submit" class="btn-primary">Next</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button class="dark-mode-toggle-btn" id="darkModeToggle" title="Toggle Dark Mode">
+        <i class="fas fa-moon"></i> </button>
+</div>
+
+<script>
+    function showRegisterForm() {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+    }
+
+    function showLoginForm() {
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const errorMessageDiv = document.querySelector('.error-message p');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeToggleIcon = darkModeToggle.querySelector('i');
+        const body = document.body;
+
+        // --- Dark Mode Logic ---
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            darkModeToggleIcon.classList.remove('fa-moon');
+            darkModeToggleIcon.classList.add('fa-sun');
+        } else {
+            body.classList.remove('dark-mode');
+            darkModeToggleIcon.classList.remove('fa-sun');
+            darkModeToggleIcon.classList.add('fa-moon');
+        }
+
+        darkModeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                darkModeToggleIcon.classList.remove('fa-moon');
+                darkModeToggleIcon.classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                darkModeToggleIcon.classList.remove('fa-sun');
+                darkModeToggleIcon.classList.add('fa-moon');
+            }
+        });
+
+        // --- Form Toggle Logic ---
+        if (errorMessageDiv && errorMessageDiv.textContent.includes('Username already exists')) {
+            showRegisterForm();
+        }
+
+        // --- Input Label Animation Logic ---
+        document.querySelectorAll('.form-group input').forEach(input => {
+            const updateHasValue = () => {
+                if (input.value.length > 0) {
+                    input.classList.add('has-value');
+                } else {
+                    input.classList.remove('has-value');
+                }
+            };
+
+            updateHasValue();
+
+            input.addEventListener('input', updateHasValue);
+            input.addEventListener('change', updateHasValue);
+            input.addEventListener('blur', updateHasValue);
+
+            setTimeout(updateHasValue, 50);
+        });
+    });
+</script>
+</body>
+</html>

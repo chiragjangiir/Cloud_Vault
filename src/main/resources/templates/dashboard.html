@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Vault - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            /* Light Mode Colors (Default) */
+            --color-brand-blue: #4285F4;
+            --color-brand-blue-dark: #3367D6;
+            --color-brand-green: #34A853;
+            --color-brand-green-dark: #2A7C3D;
+            --color-brand-red: #EA4335;
+            --color-brand-red-dark: #C62D2C;
+            --color-brand-yellow: #FBBC05;
+
+            --color-neutral-bg: #F8F9FA;
+            --color-card-bg: #FFFFFF;
+            --color-border: #D8D8D8; /* Slightly darker border for better visibility in light mode */
+            --color-text-header: #202124;
+            --color-text-body: #5F6368;
+            --color-text-light: #9AA0A6;
+            --color-upload-section-text: #202124; /* Specific dark text for upload section header */
+            --color-input-text: #202124; /* Specific dark text for input fields */
+
+
+            --color-success-bg: #E6F4EA;
+            --color-success-text: #1E8E3E;
+            --color-success-border: #81C995;
+            --color-error-bg: #FAD2CE;
+            --color-error-text: #D93025;
+            --color-error-border: #F28B82;
+
+            --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.302), 0 1px 3px 1px rgba(60,64,67,0.149);
+            --shadow-md: 0 4px 8px 3px rgba(60,64,67,0.15), 0 6px 10px 2px rgba(60,64,67,0.3);
+        }
+
+        /* Dark Mode Colors */
+        body.dark-mode {
+            --color-neutral-bg: #202124;
+            --color-card-bg: #2C2C2C;
+            --color-border: #444444;
+            --color-text-header: #E0E0E0;
+            --color-text-body: #B0B0B0;
+            --color-text-light: #777777;
+            --color-upload-section-text: #E0E0E0; /* Specific light text for upload section header */
+            --color-input-text: #E0E0E0; /* Specific light text for input fields */
+
+
+            --color-success-bg: #283C2F;
+            --color-success-text: #81C995;
+            --color-success-border: #405A45;
+
+            --color-error-bg: #4A2B2A;
+            --color-error-text: #F28B82;
+            --color-error-border: #6F403D;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.5), 0 1px 3px 1px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px 3px rgba(0,0,0,0.3), 0 6px 10px 2px rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--color-neutral-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 1rem;
+            color: var(--color-text-body);
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .top-nav {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--color-card-bg);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--color-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .top-nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            transition: color 0.3s ease;
+        }
+        .top-nav .logo i {
+            color: var(--color-brand-blue);
+            font-size: 1.2rem;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 1.5rem;
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--color-input-text); /* Use specific input text color */
+            background-color: var(--color-neutral-bg);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--color-brand-blue);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        .search-bar i {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-light);
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-controls .icon-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--color-text-body);
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .user-controls .icon-btn:hover {
+            background-color: var(--color-neutral-bg);
+        }
+        .user-controls .profile-pic {
+            width: 32px;
+            height: 32px;
+            background-color: var(--color-brand-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .user-controls .profile-pic:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+        .user-controls .logout-btn {
+            background-color: transparent;
+            color: var(--color-text-body);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .user-controls .logout-btn:hover {
+            background-color: var(--color-neutral-bg);
+            color: var(--color-text-header);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Dark Mode Toggle Specific Styles */
+        .dark-mode-toggle-btn {
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--color-text-body);
+            transition: color 0.3s ease;
+        }
+        .dark-mode-toggle-btn i {
+            color: var(--color-text-body);
+            transition: color 0.3s ease;
+        }
+
+
+        .container {
+            max-width: 850px;
+            width: 100%;
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            border: 1px solid var(--color-border);
+            position: relative;
+            z-index: 1;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--color-border);
+            transition: border-color 0.3s ease;
+        }
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: color 0.3s ease;
+        }
+        .header h2 i {
+            color: var(--color-brand-blue);
+            font-size: 1.5rem;
+        }
+
+
+        .message {
+            padding: 0.9rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            box-shadow: none;
+            border: 1px solid;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .message i {
+            font-size: 1.2rem;
+        }
+        .success-message {
+            background-color: var(--color-success-bg);
+            color: var(--color-success-text);
+            border-color: var(--color-success-border);
+        }
+        .error-message {
+            background-color: var(--color-error-bg);
+            color: var(--color-error-text);
+            border-color: var(--color-error-border);
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+            padding: 1.8rem;
+            border: 1px dashed var(--color-border);
+            border-radius: 12px;
+            text-align: center;
+            background-color: var(--color-card-bg);
+            box-shadow: none;
+            position: relative;
+            overflow: hidden;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .upload-section h3 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--color-upload-section-text); /* Use the new specific variable */
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            transition: color 0.3s ease;
+        }
+        .upload-section h3 i {
+             color: var(--color-upload-section-text); /* Ensure icon also uses the new variable */
+             transition: color 0.3s ease;
+        }
+        .upload-input {
+            margin-bottom: 1.2rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 0.6rem;
+            background-color: var(--color-card-bg); /* Background of the input container */
+            color: var(--color-input-text); /* Text color for placeholder/chosen file name */
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Specific styling for the file input element */
+        .upload-input input[type="file"] {
+            width: 100%;
+            padding: 0; /* Remove default padding that might affect visibility */
+            border: none; /* Ensure no extra borders */
+            background-color: transparent; /* Ensure transparent background */
+            color: var(--color-input-text); /* Text color for "No file chosen" */
+            cursor: pointer;
+            font-size: 0.9rem; /* Match parent font size */
+            box-sizing: border-box;
+        }
+
+        /* Styles for the "Choose File" button part of the file input */
+        .upload-input input[type="file"]::-webkit-file-upload-button {
+            background-color: var(--color-brand-blue); /* Use brand blue for "Choose File" button */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            border: none; /* No default border */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .upload-input input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: var(--color-brand-blue-dark);
+            transform: translateY(0);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* For Firefox */
+        .upload-input input[type="file"]::file-selector-button {
+            background-color: var(--color-brand-blue); /* Use brand blue for "Choose File" button */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            border: none; /* No default border */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .upload-input input[type="file"]::file-selector-button:hover {
+            background-color: var(--color-brand-blue-dark);
+            transform: translateY(0);
+            box-shadow: var(--shadow-md);
+        }
+
+
+        .upload-btn {
+            background-color: var(--color-brand-green); /* Changed to brand green for consistency */
+            color: white;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: var(--shadow-sm);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 0 auto;
+        }
+        .upload-btn i {
+            color: white; /* Ensure the icon color for upload button is always white */
+            transition: color 0.3s ease;
+        }
+        .upload-btn:hover {
+            background-color: var(--color-brand-green-dark); /* Darker green on hover */
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            transition: color 0.3s ease;
+        }
+
+        .file-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .file-list th, .file-list td {
+            padding: 0.9rem 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-body);
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .file-list th {
+            background-color: var(--color-neutral-bg);
+            font-weight: 500;
+            color: var(--color-text-header);
+            text-transform: none;
+            font-size: 0.85rem;
+            letter-spacing: normal;
+        }
+        .file-list tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .file-list tbody tr:hover {
+            background-color: #F0F0F0;
+        }
+        body.dark-mode .file-list tbody tr:hover {
+             background-color: #3A3A3A;
+        }
+        .action-btn i {
+            color: white;
+        }
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 0.6rem;
+            box-shadow: none;
+        }
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        .download-btn {
+            background-color: var(--color-brand-blue); /* Changed to brand blue for consistency */
+            color: white;
+            border: none;
+        }
+        .download-btn:hover {
+            background-color: var(--color-brand-blue-dark); /* Darker blue on hover */
+        }
+        .delete-btn {
+            background-color: var(--color-brand-red);
+            color: white;
+            border: none;
+        }
+        .delete-btn:hover {
+            background-color: var(--color-brand-red-dark);
+        }
+
+        .empty-files-message {
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+            padding: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: color 0.3s ease;
+        }
+
+        /* Storage Progress Bar (Dashboard) */
+        .storage-section {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid var(--color-border);
+            width: 100%;
+            max-width: 850px;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .storage-section h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            margin-bottom: 0.8rem;
+            transition: color 0.3s ease;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--color-border);
+            border-radius: 6px;
+            height: 10px;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--color-brand-blue);
+            width: 25%;
+            border-radius: 6px;
+        }
+        .storage-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--color-text-body);
+            margin-top: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        .storage-info span:first-child {
+            font-weight: 500;
+            color: var(--color-text-header);
+            transition: color 0.3s ease;
+        }
+
+        /* User Profile Pop-up Styles */
+        .profile-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 1rem;
+            padding-top: 1rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.3s ease;
+        }
+        body.dark-mode .profile-popup-overlay {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .profile-popup-content {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            width: 320px;
+            max-height: calc(100vh - 3rem);
+            overflow-y: auto;
+            border: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-popup-overlay.show .profile-popup-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .popup-header {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--color-border);
+            transition: border-color 0.3s ease;
+        }
+        .popup-header .user-avatar {
+            width: 72px;
+            height: 72px;
+            background-color: var(--color-brand-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin: 0 auto 0.8rem;
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+        }
+        .popup-header .user-avatar:hover {
+            opacity: 0.9;
+            transform: scale(1.03);
+        }
+        .popup-header .user-avatar i.fa-camera {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--color-neutral-bg);
+            color: var(--color-text-body);
+            padding: 0.4rem;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .popup-header h4 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            margin-bottom: 0.2rem;
+            transition: color 0.3s ease;
+        }
+        .popup-header p {
+            font-size: 0.85rem;
+            color: var(--color-text-body);
+            margin-bottom: 0.8rem;
+            transition: color 0.3s ease;
+        }
+        .popup-header .manage-btn {
+            background-color: transparent;
+            color: var(--color-brand-blue);
+            border: 1px solid var(--color-brand-blue);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .popup-header .manage-btn:hover {
+            background-color: var(--color-brand-blue);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .popup-options {
+            padding: 0.8rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            transition: border-color 0.3s ease;
+        }
+        .popup-options .option-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            color: var(--color-text-body);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border-radius: 8px;
+            padding-left: 0.5rem;
+            margin: 0 -0.5rem;
+        }
+        .popup-options .option-item:hover {
+            background-color: var(--color-neutral-bg);
+            color: var(--color-text-header);
+        }
+        .popup-options .option-item i {
+            width: 24px;
+            text-align: center;
+            color: var(--color-text-light);
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .popup-storage-section {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            transition: border-color 0.3s ease;
+        }
+        .popup-storage-section h5 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--color-text-header);
+            margin-bottom: 0.6rem;
+            transition: color 0.3s ease;
+        }
+        .popup-storage-section .progress-bar-container {
+            height: 8px;
+        }
+        .popup-storage-section .storage-info {
+            font-size: 0.8rem;
+        }
+        .popup-storage-section .buy-storage-btn {
+            background-color: transparent;
+            color: var(--color-brand-blue);
+            border: 1px solid var(--color-brand-blue);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .popup-storage-section .buy-storage-btn:hover {
+            background-color: var(--color-brand-blue);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .popup-footer-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            gap: 1rem;
+        }
+        .popup-footer-actions .footer-btn {
+            background-color: transparent;
+            color: var(--color-text-body);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .popup-footer-actions .footer-btn:hover {
+            background-color: var(--color-neutral-bg);
+            color: var(--color-text-header);
+        }
+        .popup-footer-actions .logout-btn-popup {
+            background-color: var(--color-brand-red);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+        .popup-footer-actions .logout-btn-popup:hover {
+            background-color: var(--color-brand-red-dark);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <div class="logo">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>Cloud Vault</span>
+    </div>
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search in Cloud Vault">
+    </div>
+    <div class="user-controls">
+        <button class="icon-btn dark-mode-toggle-btn" id="darkModeToggle" title="Toggle Dark Mode">
+            <i class="fas fa-moon"></i> </button>
+
+        <button class="icon-btn" title="Apps"><i class="fas fa-th"></i></button>
+        <button class="icon-btn" title="Help"><i class="fas fa-question-circle"></i></button>
+        <button class="icon-btn" title="Settings"><i class="fas fa-cog"></i></button>
+        <span class="profile-pic" id="profilePic" title="Profile" th:text="${loggedInUser.username.substring(0, 1).toUpperCase()}">U</span>
+        <a th:href="@{/logout}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div th:if="${successMessage}" class="message success-message">
+        <i class="fas fa-check-circle"></i>
+        <p th:text="${successMessage}"></p>
+    </div>
+    <div th:if="${errorMessage}" class="message error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="upload-section">
+        <h3><i class="fas fa-upload"></i> Upload New File</h3>
+        <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+            <div class="upload-input">
+                <input type="file" name="file" required>
+            </div>
+            <button type="submit" class="upload-btn"><i class="fas fa-plus-circle"></i> Upload</button>
+        </form>
+    </div>
+
+    <h3 class="section-title"><i class="fas fa-folder-open"></i> Your Files</h3>
+    <div th:if="${#lists.isEmpty(files)}" class="empty-files-message text-gray-600 text-center py-8">
+        <i class="fas fa-inbox"></i>
+        <p>No files uploaded yet. Start by uploading one!</p>
+    </div>
+    <div th:unless="${#lists.isEmpty(files)}">
+        <table class="file-list">
+            <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Upload Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="file : ${files}">
+                <td th:text="${file.filename}">File Name</td>
+                <td th:text="${#numbers.formatDecimal(file.size / 1024.0, 1, 2) + ' KB'}">Size</td>
+                <td th:text="${#temporals.format(file.uploadDate, 'yyyy-MM-dd HH:mm')}">Upload Date</td>
+                <td>
+                    <a th:href="@{'/download/' + ${file.uniqueFilename}}" class="action-btn download-btn"><i class="fas fa-download"></i> Download</a>
+                    <form th:action="@{'/delete/' + ${file.id}}" method="post" style="display:inline;">
+                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this file?');"><i class="fas fa-trash-alt"></i> Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="storage-section">
+    <h3>Storage</h3>
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 25%;"></div> </div>
+    <div class="storage-info">
+        <span>25 GB used</span>
+        <span>of 100 GB</span>
+    </div>
+</div>
+
+<div class="profile-popup-overlay" id="profilePopupOverlay">
+    <div class="profile-popup-content">
+        <div class="popup-header">
+            <div class="user-avatar">
+                <span th:text="${loggedInUser.username.substring(0, 1).toUpperCase()}">U</span>
+                <i class="fas fa-camera"></i> </div>
+            <h4 th:text="${loggedInUser.username}">Username</h4>
+            <p th:text="${loggedInUser.username} + '@cloudvault.com'">user@cloudvault.com</p> <button class="manage-btn">Manage your CloudVault Account</button>
+        </div>
+
+        <div class="popup-options">
+            <a href="#" class="option-item">
+                <i class="fas fa-user-plus"></i>
+                <span>Add another account</span>
+            </a>
+        </div>
+
+        <div class="popup-storage-section">
+            <h5>Storage used</h5>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: 25%;"></div> </div>
+            <div class="storage-info">
+                <span>25 GB</span>
+                <span>of 100 GB used</span>
+            </div>
+            <button class="buy-storage-btn">Buy more storage</button>
+        </div>
+
+        <div class="popup-footer-actions">
+            <button class="footer-btn">Privacy Policy</button>
+            <a th:href="@{/logout}" class="footer-btn logout-btn-popup"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const profilePic = document.getElementById('profilePic');
+        const profilePopupOverlay = document.getElementById('profilePopupOverlay');
+        const profilePopupContent = profilePopupOverlay.querySelector('.profile-popup-content');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeToggleIcon = darkModeToggle.querySelector('i');
+        const body = document.body;
+
+        // --- Dark Mode Logic ---
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            darkModeToggleIcon.classList.remove('fa-moon');
+            darkModeToggleIcon.classList.add('fa-sun'); // Sun icon for dark mode
+        } else {
+            body.classList.remove('dark-mode');
+            darkModeToggleIcon.classList.remove('fa-sun');
+            darkModeToggleIcon.classList.add('fa-moon'); // Moon icon for light mode
+        }
+
+        // Toggle dark mode
+        darkModeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                darkModeToggleIcon.classList.remove('fa-moon');
+                darkModeToggleIcon.classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                darkModeToggleIcon.classList.remove('fa-sun');
+                darkModeToggleIcon.classList.add('fa-moon');
+            }
+        });
+
+        // --- Profile Pop-up Logic (from previous version) ---
+        // Function to show the popup
+        function showProfilePopup() {
+            profilePopupOverlay.classList.add('show');
+            // Position the popup near the profile icon
+            const profilePicRect = profilePic.getBoundingClientRect();
+            // Calculate right and top position
+            profilePopupContent.style.right = (window.innerWidth - profilePicRect.right) + 'px';
+            profilePopupContent.style.top = profilePicRect.bottom + 10 + 'px'; // 10px below the profile pic
+        }
+
+        // Function to hide the popup
+        function hideProfilePopup() {
+            profilePopupOverlay.classList.remove('show');
+        }
+
+        // Toggle popup on profile pic click
+        profilePic.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent click from propagating to document
+            if (profilePopupOverlay.classList.contains('show')) {
+                hideProfilePopup();
+            } else {
+                showProfilePopup();
+            }
+        });
+
+        // Hide popup when clicking outside of it
+        document.addEventListener('click', function(event) {
+            if (profilePopupOverlay.classList.contains('show') && !profilePopupContent.contains(event.target) && event.target !== profilePic) {
+                hideProfilePopup();
+            }
+        });
+    });
+</script>
+</body>
+</html>
