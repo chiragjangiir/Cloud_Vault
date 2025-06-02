@@ -10,11 +10,11 @@ CLOUD VAULT
 
     * An IDE (IntelliJ IDEA Community Edition is excellent for Spring Boot).
 
-Click "Generate" and download the ZIP file.
+Click code and download the ZIP file.
 
-    * **Unzip and Open in IDE:** Extract the downloaded ZIP and open the project in your IDE (e.g., IntelliJ IDEA: `File -> Open -> select the unzipped folder`).
+    * Unzip and Open in IDE:** Extract the downloaded ZIP and open the project in your IDE (e.g., IntelliJ IDEA: `File -> Open -> select the unzipped folder`).
 
-    * **Create Folders and Files:**
+    * Create Folders and Files:**
 
         * Inside `src/main/java/com/example/cloudstorage/`, create new packages: `config`, `model`, `repository`, `service`, `controller`.
 
@@ -24,7 +24,7 @@ Click "Generate" and download the ZIP file.
 
         * Create `src/main/resources/templates/` and place `index.html` and `dashboard.html` inside it.
 
-    * **Run the Application:**
+    * Run the Application:**
 
         * Navigate to `src/main/java/com/example/cloudstorage/CloudStorageApplication.java`.
 
