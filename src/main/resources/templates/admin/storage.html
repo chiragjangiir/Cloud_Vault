@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin · Storage')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <nav class="subnav" aria-label="Admin sections">
+    <a th:href="@{/admin}">Overview</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/storage}" class="active">Storage</a>
+    <a th:href="@{/admin/jobs}">Jobs</a>
+    <a th:href="@{/admin/audit}">Audit log</a>
+  </nav>
+  <h1>Storage</h1>
+
+  <section class="card table-wrap" aria-labelledby="loc-h">
+    <h2 id="loc-h">Storage locations</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Path</th><th>Status</th><th>Filesystem</th>
+        <th>Capacity</th><th>Our data</th><th>Free</th><th>Last health check</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="v : ${locations}">
+        <td><strong th:text="${v.location().name}">loc</strong>
+          <span class="pill pill-cancelled" th:if="${v.location().autoRegistered}">AUTO</span></td>
+        <td class="mono" th:text="${v.location().rootPath}">/path</td>
+        <td><span class="pill" th:classappend="'pill-' + ${#strings.toLowerCase(v.location().status)}"
+                  th:text="${v.location().status}">ONLINE</span></td>
+        <td class="small" th:text="${v.location().filesystem != null ? v.location().filesystem : '—'}">fs</td>
+        <td th:text="${T(com.cloudvault.service.Format).bytes(v.location().totalCapacityBytes)}">0 B</td>
+        <td th:text="${T(com.cloudvault.service.Format).bytes(v.usedBytes())}">0 B</td>
+        <td th:text="${T(com.cloudvault.service.Format).bytes(v.location().usableCapacityBytes)}">0 B</td>
+        <td class="small muted">
+          <span th:text="${T(com.cloudvault.service.Format).dateTime(v.location().lastHealthCheck)}">—</span><br>
+          <span th:text="${v.location().lastHealthMessage}">msg</span>
+        </td>
+        <td>
+          <form class="inline-form" th:action="@{/admin/storage/locations/{id}/health(id=${v.location().id})}"
+                method="post">
+            <button class="btn btn-sm" type="submit">Run health check</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="small muted">Health checks perform real read/write probes against the path and read
+      actual filesystem capacity. A disconnected drive becomes OFFLINE and its files return
+      “storage temporarily unavailable”.</p>
+  </section>
+
+  <div class="grid cols-2" style="margin-top:1rem">
+    <section class="card" aria-labelledby="add-h">
+      <h2 id="add-h">Register a storage location</h2>
+      <form th:action="@{/admin/storage/locations}" method="post">
+        <div class="field">
+          <label for="loc-name">Name</label>
+          <input id="loc-name" name="name" type="text" pattern="[A-Za-z0-9_-]{2,64}" required
+                 placeholder="HDD-01">
+        </div>
+        <div class="field">
+          <label for="loc-path">Absolute path on the server (must exist and be writable)</label>
+          <input id="loc-path" name="path" type="text" required placeholder="/mnt/cloudvault">
+        </div>
+        <button class="btn btn-primary" type="submit">Validate &amp; register</button>
+      </form>
+      <p class="small muted">Cloud Vault never formats or partitions disks — it only operates inside
+        the directory you provide.</p>
+    </section>
+
+    <section class="card" aria-labelledby="mig-h">
+      <h2 id="mig-h">Storage migration</h2>
+      <form th:action="@{/admin/storage}" method="get" class="form-row">
+        <div><label for="src">Source</label>
+          <select id="src" name="previewSource">
+            <option th:each="v : ${locations}" th:value="${v.location().id}"
+                    th:text="${v.location().name}">loc</option>
+          </select></div>
+        <div><label for="dst">Destination</label>
+          <select id="dst" name="previewDestination">
+            <option th:each="v : ${locations}" th:value="${v.location().id}"
+                    th:text="${v.location().name}">loc</option>
+          </select></div>
+        <div><button class="btn" type="submit">Preview</button></div>
+      </form>
+
+      <div th:if="${preview != null}" style="margin-top:.8rem">
+        <p class="small">
+          Objects: <strong th:text="${preview.totalObjects()}">0</strong> ·
+          Bytes: <strong th:text="${T(com.cloudvault.service.Format).bytes(preview.totalBytes())}">0 B</strong> ·
+          Destination free: <strong th:text="${T(com.cloudvault.service.Format).bytes(preview.destinationFreeBytes())}">0 B</strong>
+        </p>
+        <div class="flash flash-error" th:if="${!preview.destinationHasCapacity()}">
+          Destination does not have enough free space.
+        </div>
+        <form th:action="@{/admin/storage/migrate}" method="post"
+              data-confirm="Start migration? Objects are copied, checksum-verified, then the source copy is removed.">
+          <input type="hidden" name="sourceId" th:value="${previewSourceId}">
+          <input type="hidden" name="destinationId" th:value="${previewDestinationId}">
+          <button class="btn btn-primary" type="submit"
+                  th:disabled="${!preview.destinationHasCapacity()}">Start migration</button>
+        </form>
+        <p class="small muted">Progress is shown on the Jobs page as processed objects / bytes —
+          actual values only.</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="audit-h">
+      <h2 id="audit-h">Consistency checks</h2>
+      <div class="actions">
+        <form th:action="@{/admin/storage/audit}" method="post">
+          <button class="btn" type="submit">Run storage audit</button>
+        </form>
+        <form th:action="@{/admin/storage/verify}" method="post">
+          <button class="btn" type="submit">Verify checksums (first 1000)</button>
+        </form>
+        <form th:action="@{/admin/storage/reconcile}" method="post">
+          <button class="btn" type="submit">Reconcile quota counters</button>
+        </form>
+      </div>
+      <p class="small muted">The audit scans real files on disk and compares them with database
+        objects: missing files, orphaned files and checksum mismatches are reported, never
+        auto-fixed. Results appear as a report on the job (Jobs page).</p>
+    </section>
+
+    <section class="card" aria-labelledby="pools-h">
+      <h2 id="pools-h">Pools</h2>
+      <div th:each="p : ${pools}" style="margin-bottom:.9rem">
+        <strong th:text="${p.pool().name}">MAIN_STORAGE</strong>
+        <span class="pill pill-active" th:text="${p.pool().status}">ACTIVE</span>
+        <table>
+          <thead><tr><th>Location</th><th>Status</th><th>Objects</th><th>Used</th></tr></thead>
+          <tbody>
+          <tr th:each="m : ${p.locations()}">
+            <td th:text="${m.location().name}">loc</td>
+            <td><span class="pill" th:classappend="'pill-' + ${#strings.toLowerCase(m.location().status)}"
+                      th:text="${m.location().status}">ONLINE</span></td>
+            <td th:text="${m.objectCount()}">0</td>
+            <td th:text="${T(com.cloudvault.service.Format).bytes(m.usedBytes())}">0 B</td>
+          </tr>
+          </tbody>
+        </table>
+        <p class="small muted">Computed capacity <span th:text="${T(com.cloudvault.service.Format).bytes(p.totalCapacityBytes())}">0 B</span>
+          · tracked data <span th:text="${T(com.cloudvault.service.Format).bytes(p.usedBytes())}">0 B</span>
+          · filesystem free <span th:text="${T(com.cloudvault.service.Format).bytes(p.freeBytes())}">0 B</span></p>
+      </div>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<div class="auth-wrap">
+  <div class="card auth-card" role="alert">
+    <a class="brand" th:href="@{/}">Cloud Vault</a>
+    <h1 th:text="${status} != null ? ${status} : 'Error'">500</h1>
+    <p class="muted" th:text="${error} ?: 'Something went wrong.'">Error message</p>
+    <p class="auth-alt">
+      <a th:href="@{/app}">Go to dashboard</a> · <a th:href="@{/login}">Sign in</a>
+    </p>
+  </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

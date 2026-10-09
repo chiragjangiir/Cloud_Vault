@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body>
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <a class="brand" th:href="@{/}">Cloud Vault</a>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="flash flash-error" th:if="${param.error != null}">Invalid username or password, or the account is locked.</div>
+    <div class="flash flash-ok" th:if="${param.logout != null}">You have been signed out.</div>
+    <div class="flash flash-ok" th:if="${param.revoked != null}">Your session was signed out remotely.</div>
+    <div class="flash flash-ok" th:if="${param.expired != null}">Your session expired; please sign in again.</div>
+    <form th:action="@{/login}" method="post">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Sign in</button>
+    </form>
+    <p class="auth-alt"><a th:href="@{/forgot-password}">Forgot password</a> · <a th:href="@{/register}">Create account</a></p>
+  </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Settings')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Settings</h1>
+
+  <div class="grid cols-2">
+    <section class="card" aria-labelledby="acct-h">
+      <h2 id="acct-h">Account</h2>
+      <p class="small muted">Username: <strong th:text="${me.username}">user</strong><br>
+        Email: <strong th:text="${me.email}">user@example.com</strong><br>
+        Role: <strong th:text="${me.role}">USER</strong><br>
+        Member since <span th:text="${fmt.date(me.createdAt)}">—</span></p>
+      <form th:action="@{/api/v1/me/export}" method="get">
+        <button class="btn" type="submit">Export all my data (ZIP)</button>
+      </form>
+      <p class="small muted">The export contains a JSON manifest plus the real bytes of every file.</p>
+    </section>
+
+    <section class="card" aria-labelledby="pw-h">
+      <h2 id="pw-h">Change password</h2>
+      <form th:action="@{/app/settings/password}" method="post">
+        <div class="field">
+          <label for="currentPassword">Current password</label>
+          <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="field">
+          <label for="newPassword">New password (min 10 characters)</label>
+          <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="10" required>
+        </div>
+        <div class="field">
+          <label for="confirmPassword">Confirm new password</label>
+          <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Update password</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="sess-h">
+      <h2 id="sess-h">Active sessions</h2>
+      <p class="small muted">Revoking a session signs that device out on its next request.</p>
+      <div class="table-wrap" th:if="${sessions != null and !sessions.isEmpty()}">
+        <table>
+          <thead><tr><th>Created</th><th>IP</th><th>Device</th><th></th></tr></thead>
+          <tbody>
+          <tr th:each="s : ${sessions}">
+            <td th:text="${fmt.dateTime(s.createdAt)}">—</td>
+            <td th:text="${s.ipAddress}">ip</td>
+            <td class="small" th:text="${s.userAgent != null ? #strings.abbreviate(s.userAgent, 40) : '—'}">ua</td>
+            <td>
+              <form class="inline-form" th:action="@{/app/settings/sessions/{id}/revoke(id=${s.id})}"
+                    method="post" data-confirm="Sign this device out?"
+                    th:if="${!s.current}">
+                <button class="btn btn-sm btn-danger" type="submit">Revoke</button>
+              </form>
+              <span class="pill pill-active" th:if="${s.current}">THIS DEVICE</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <form th:action="@{/app/settings/sessions/revoke-others}" method="post"
+            data-confirm="Sign out all other devices?" th:if="${sessions != null and sessions.size() > 1}">
+        <button class="btn" type="submit">Sign out other devices</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="theme-h">
+      <h2 id="theme-h">Appearance</h2>
+      <p class="small muted">Theme: light / dark / system — use the ◐ button in the header.
+        The choice is remembered in this browser.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

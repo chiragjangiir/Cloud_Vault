@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Dashboard</h1>
+
+  <div class="grid cols-4">
+    <div class="card">
+      <div class="stat-label">Storage used</div>
+      <div class="stat-value"
+           th:text="${T(com.cloudvault.service.Format).bytes(limits.usedBytes())}">0 B</div>
+      <div class="small muted">of <span th:text="${T(com.cloudvault.service.Format).bytes(limits.quotaBytes())}">0 B</span>
+        · <span th:text="${T(com.cloudvault.service.Format).percent(limits.usedBytes(), limits.quotaBytes())}">0%</span></div>
+      <div class="progress" style="margin-top:.5rem" role="progressbar"
+           th:attr="aria-valuenow=${fmt.percent(limits.usedBytes(), limits.quotaBytes())},aria-valuemin=0,aria-valuemax=100">
+        <div th:style="'width:' + ${fmt.percentNumber(limits.usedBytes(), limits.quotaBytes())} + '%'"></div>
+      </div>
+      <div class="flash flash-error" style="margin-top:.6rem" th:if="${limits.overQuota()}">
+        Over quota — new uploads are blocked until you free space or upgrade.
+      </div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Files</div>
+      <div class="stat-value" th:text="${overview.activeFiles()}">0</div>
+      <div class="small muted"><span th:text="${overview.trashedFiles()}">0</span> in trash</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Active shares</div>
+      <div class="stat-value" th:text="${overview.shareCount()}">0</div>
+      <div class="small muted"><a th:href="@{/app/shares}">Manage shares</a></div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Plan</div>
+      <div class="stat-value" th:text="${limits.planCode()}">FREE</div>
+      <div class="small muted"><a th:href="@{/app/subscription}">Plan details</a></div>
+    </div>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:1rem">
+    <section class="card" aria-labelledby="recent-h">
+      <h2 id="recent-h">Recent files</h2>
+      <div class="table-wrap" th:if="${!recent.isEmpty()}">
+        <table>
+          <thead><tr><th>Name</th><th>Size</th><th>Updated</th><th></th></tr></thead>
+          <tbody>
+          <tr th:each="f : ${recent}">
+            <td><span class="file-icon" aria-hidden="true">📄</span>
+              <a th:href="@{/app/files/{id}/download(id=${f.id})}" th:text="${f.name}">file</a></td>
+            <td th:text="${T(com.cloudvault.service.Format).bytes(f.sizeBytes)}">0 B</td>
+            <td class="hide-sm" th:text="${T(com.cloudvault.service.Format).dateTime(f.updatedAt)}">—</td>
+            <td><a class="btn btn-sm" th:href="@{/app/files(folderId=${f.folder.id})}">Open folder</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" th:if="${recent.isEmpty()}">No files yet — upload your first file from the
+        <a th:href="@{/app/files}">Files page</a>.</p>
+    </section>
+
+    <section class="card" aria-labelledby="notif-h">
+      <h2 id="notif-h">Recent activity</h2>
+      <div th:if="${!notifications.isEmpty()}">
+        <div class="notif" th:each="n : ${notifications}" th:classappend="${n.readAt == null} ? 'unread'">
+          <strong th:text="${n.title}">Title</strong>
+          <div class="small muted" th:text="${n.body}">Body</div>
+          <div class="small muted" th:text="${T(com.cloudvault.service.Format).dateTime(n.createdAt)}">—</div>
+        </div>
+      </div>
+      <p class="muted" th:if="${notifications.isEmpty()}">No activity yet. Notifications are created by
+        real events (shares, quota, storage health, jobs).</p>
+      <p><a th:href="@{/app/notifications}">All notifications</a></p>
+    </section>
+
+    <section class="card" aria-labelledby="usage-h">
+      <h2 id="usage-h">Storage by type</h2>
+      <div th:if="${!overview.storageByType().isEmpty()}">
+        <div class="bar-row" th:each="b : ${overview.storageByType()}">
+          <span th:text="${b.label()}">type</span>
+          <div class="bar-track">
+            <div class="bar-fill"
+                 th:style="'width:' + ${fmt.percentNumber(b.bytes(), overview.usedBytes())} + '%'"></div>
+          </div>
+          <span th:text="${T(com.cloudvault.service.Format).bytes(b.bytes())}">0 B</span>
+        </div>
+      </div>
+      <p class="muted" th:if="${overview.storageByType().isEmpty()}">No stored data yet.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

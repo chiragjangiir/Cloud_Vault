@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Search')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Search</h1>
+  <section class="card">
+    <form th:action="@{/app/search}" method="get" class="form-row">
+      <div><label for="q">Name contains</label>
+        <input id="q" name="q" type="search" th:value="${q}"></div>
+      <div><label for="ext">Extension</label>
+        <input id="ext" name="ext" type="text" placeholder="pdf" th:value="${ext}"></div>
+      <div><label for="mime">MIME type</label>
+        <input id="mime" name="mime" type="text" placeholder="image/*" th:value="${mime}"></div>
+      <div><label for="from">From (ISO date-time)</label>
+        <input id="from" name="from" type="text" placeholder="2026-01-01T00:00:00Z" th:value="${from}"></div>
+      <div><label for="to">To (ISO date-time)</label>
+        <input id="to" name="to" type="text" placeholder="2026-12-31T23:59:59Z" th:value="${to}"></div>
+      <div><button class="btn btn-primary" type="submit">Search</button></div>
+    </form>
+    <p class="small muted">Search runs against live database rows (name, extension, MIME, date range).</p>
+  </section>
+
+  <section class="card" style="margin-top:1rem" aria-live="polite">
+    <h2>Results</h2>
+    <div class="table-wrap" th:if="${results != null and !results.isEmpty()}">
+      <table>
+        <thead><tr><th>Name</th><th>Size</th><th>Type</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="f : ${results}">
+          <td th:text="${f.name}">file</td>
+          <td th:text="${T(com.cloudvault.service.Format).bytes(f.sizeBytes)}">0 B</td>
+          <td class="hide-sm small" th:text="${f.contentType}">type</td>
+          <td th:text="${T(com.cloudvault.service.Format).dateTime(f.createdAt)}">—</td>
+          <td><a class="btn btn-sm" th:href="@{/app/files/{id}/download(id=${f.id})}">Download</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" th:if="${results == null or results.isEmpty()}">No results — adjust your filters.</p>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

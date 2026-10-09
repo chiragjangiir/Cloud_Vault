@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Notifications')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <div class="form-row" style="align-items:center">
+    <h1 style="flex:1 1 auto">Notifications</h1>
+    <form th:action="@{/app/notifications/read-all}" method="post">
+      <button class="btn" type="submit" th:disabled="${unread == 0}">Mark all read</button>
+    </form>
+  </div>
+  <section class="card">
+    <div class="notif" th:each="n : ${notifications}" th:classappend="${n.readAt == null} ? 'unread'">
+      <strong th:text="${n.title}">Title</strong>
+      <span class="pill pill-cancelled small" th:text="${n.type}">TYPE</span>
+      <div class="small muted" th:text="${n.body}">Body</div>
+      <div class="small muted">
+        <span th:text="${T(com.cloudvault.service.Format).dateTime(n.createdAt)}">—</span>
+        <a th:if="${n.link}" th:href="${n.link}">Open</a>
+      </div>
+    </div>
+    <p class="muted" th:if="${notifications.isEmpty()}">
+      No notifications. They are created by real events such as shares, quota rejections,
+      storage outages and completed jobs.
+    </p>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

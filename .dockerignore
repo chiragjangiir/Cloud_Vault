@@ -1,0 +1,16 @@
+# Build output and dependencies are produced inside the image, not copied in.
+target/
+data/
+.git/
+.github/
+docs/
+*.md
+.env
+.env.*
+!.env.example
+src/test/
+scripts/
+.idea/
+*.iml
+.vscode/
+.DS_Store

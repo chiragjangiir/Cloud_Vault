@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Shared file')}"></head>
+<body>
+<header class="topbar">
+  <a class="brand" th:href="@{/}">Cloud&nbsp;Vault</a>
+  <nav class="topnav" aria-label="Navigation"><a th:href="@{/login}">Sign in</a></nav>
+</header>
+<main class="container" style="max-width:720px">
+  <div class="card" style="margin-top:2rem">
+    <h1 th:text="${share.file.name}">file</h1>
+    <p class="muted small">
+      Shared by <strong th:text="${share.owner.displayName != null ? share.owner.displayName : share.owner.username}">owner</strong>
+      · <span th:text="${T(com.cloudvault.service.Format).bytes(share.file.sizeBytes)}">0 B</span>
+      · <span th:text="${share.file.contentType}">type</span>
+      · permission <span th:text="${share.permission}">VIEW</span>
+    </p>
+    <p class="small muted" th:if="${share.expiresAt != null}">
+      Expires <span th:text="${T(com.cloudvault.service.Format).dateTime(share.expiresAt)}">—</span>
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary"
+         th:href="@{/share/{token}/download(token=${token})}"
+         th:if="${share.permission.name() != 'VIEW'}">Download</a>
+      <span class="small muted" th:if="${share.permission.name() == 'VIEW'}">
+        This link allows preview only — downloading is disabled by the owner.
+      </span>
+    </div>
+    <p class="small muted" style="margin-top:1rem">
+      This link is enforced server-side: when it expires or is revoked it stops working immediately.
+    </p>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

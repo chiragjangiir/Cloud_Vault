@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Forgot password')}"></head>
+<body>
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <a class="brand" th:href="@{/}">Cloud Vault</a>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <p class="small muted">Enter your username or email. If email delivery is configured,
+      a reset link valid for 30 minutes will be sent.</p>
+    <form th:action="@{/forgot-password}" method="post">
+      <div class="field">
+        <label for="identifier">Username or email</label>
+        <input id="identifier" name="identifier" type="text" required autofocus>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Send reset link</button>
+    </form>
+    <p class="auth-alt"><a th:href="@{/login}">Back to sign in</a></p>
+  </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

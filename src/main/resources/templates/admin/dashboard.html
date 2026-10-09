@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <nav class="subnav" aria-label="Admin sections">
+    <a th:href="@{/admin}" class="active">Overview</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/storage}">Storage</a>
+    <a th:href="@{/admin/jobs}">Jobs</a>
+    <a th:href="@{/admin/audit}">Audit log</a>
+  </nav>
+  <h1>Admin dashboard</h1>
+
+  <div class="grid cols-4">
+    <div class="card"><div class="stat-label">Users</div>
+      <div class="stat-value" th:text="${overview.totalUsers()}">0</div>
+      <div class="small muted"><span th:text="${overview.activeUsers()}">0</span> active</div></div>
+    <div class="card"><div class="stat-label">Active files</div>
+      <div class="stat-value" th:text="${overview.activeFiles()}">0</div>
+      <div class="small muted"><span th:text="${overview.trashedFiles()}">0</span> in trash</div></div>
+    <div class="card"><div class="stat-label">Stored (active)</div>
+      <div class="stat-value" th:text="${T(com.cloudvault.service.Format).bytes(overview.storedBytes())}">0 B</div>
+      <div class="small muted">trash: <span th:text="${T(com.cloudvault.service.Format).bytes(overview.trashedBytes())}">0 B</span></div></div>
+    <div class="card"><div class="stat-label">Storage objects</div>
+      <div class="stat-value" th:text="${overview.totalObjects()}">0</div>
+      <div class="small muted"><span th:text="${overview.activeShares()}">0</span> active shares</div></div>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:1rem">
+    <section class="card"><h2>Subscriptions</h2>
+      <table><thead><tr><th>Status</th><th>Count</th></tr></thead>
+        <tbody><tr th:each="e : ${overview.subscriptionsByStatus()}">
+          <td th:text="${e.key}">ACTIVE</td><td th:text="${e.value}">0</td></tr></tbody></table>
+    </section>
+
+    <section class="card"><h2>Background jobs</h2>
+      <table><thead><tr><th>State</th><th>Count</th></tr></thead>
+        <tbody><tr th:each="e : ${overview.jobsByState()}">
+          <td th:text="${e.key}">QUEUED</td><td th:text="${e.value}">0</td></tr></tbody></table>
+      <p><a th:href="@{/admin/jobs}">Open jobs</a></p>
+    </section>
+
+    <section class="card"><h2>Storage pools</h2>
+      <div th:each="p : ${overview.pools()}" style="margin-bottom:1rem">
+        <strong th:text="${p.pool().name}">MAIN_STORAGE</strong>
+        <table>
+          <thead><tr><th>Location</th><th>Status</th><th>Capacity</th><th>Used (our data)</th></tr></thead>
+          <tbody>
+          <tr th:each="m : ${p.locations()}">
+            <td th:text="${m.location().name}">loc</td>
+            <td><span class="pill" th:classappend="'pill-' + ${#strings.toLowerCase(m.location().status)}"
+                      th:text="${m.location().status}">ONLINE</span></td>
+            <td th:text="${T(com.cloudvault.service.Format).bytes(m.location().totalCapacityBytes)}">0 B</td>
+            <td th:text="${T(com.cloudvault.service.Format).bytes(m.usedBytes())}">0 B</td>
+          </tr>
+          </tbody>
+        </table>
+        <p class="small muted">Pool total <span th:text="${T(com.cloudvault.service.Format).bytes(p.totalCapacityBytes())}">0 B</span>
+          · free <span th:text="${T(com.cloudvault.service.Format).bytes(p.freeBytes())}">0 B</span></p>
+      </div>
+    </section>
+
+    <section class="card"><h2>Uploads (last 14 days)</h2>
+      <div th:if="${!overview.uploadsByDay().isEmpty()}">
+        <div class="bar-row" th:each="b : ${overview.uploadsByDay()}">
+          <span th:text="${b.label()}">date</span>
+          <div class="bar-track"><div class="bar-fill"
+               th:style="'width:' + ${fmt.percentNumber(b.count(), overview.uploadsByDay().size() > 0 ? overview.uploadsByDay()[overview.uploadsByDay().size() - 1].count() : 1)} + '%'"></div></div>
+          <span th:text="${b.count()} + ' files'">0</span>
+        </div>
+      </div>
+      <p class="muted small" th:if="${overview.uploadsByDay().isEmpty()}">No uploads recorded yet.</p>
+    </section>
+
+    <section class="card"><h2>Storage by type</h2>
+      <div class="bar-row" th:each="b : ${overview.storageByType()}">
+        <span th:text="${b.label()}">type</span>
+        <div class="bar-track"><div class="bar-fill"
+             th:style="'width:' + ${fmt.percentNumber(b.bytes(), overview.storedBytes())} + '%'"></div></div>
+        <span th:text="${T(com.cloudvault.service.Format).bytes(b.bytes())}">0 B</span>
+      </div>
+      <p class="muted small" th:if="${overview.storageByType().isEmpty()}">No stored data.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

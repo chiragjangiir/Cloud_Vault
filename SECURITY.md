@@ -1,21 +1,52 @@
 # Security Policy
 
-## Supported Versions
+## Reporting a vulnerability
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Please report security issues **privately** using GitHub's advisory form:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+<https://github.com/chiragjangiir/Cloud_Vault/security/advisories/new>
 
-## Reporting a Vulnerability
+Please do **not** open a public issue for vulnerabilities. You can expect:
 
-Use this section to tell people how to report a vulnerability.
+- **Acknowledgement** within 3 working days.
+- An initial assessment within 10 working days.
+- A fix or mitigation plan agreed with you before any public disclosure.
+- Credit in `CHANGELOG.md` unless you prefer to remain anonymous.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Supported versions
+
+Only the latest release on `main` receives security updates.
+
+| Version | Supported |
+| --- | --- |
+| latest `main` | ✅ |
+| older commits / forks | ❌ |
+
+## What is enforced (and tested)
+
+- **Passwords** — BCrypt (strength 12); hashes are `@JsonIgnore`d and never
+  appear in any API response (asserted by `AuthSecurityTest`).
+- **Sessions** — server-side sessions with fixation protection, concurrent
+  session limits, revocation from the settings page, and invalidation on
+  logout/password change.
+- **CSRF** — `CookieCsrfTokenRepository` on every state-changing request.
+- **Authorization** — authentication *and* ownership/role checks on every
+  protected resource; cross-user access returns 404 without existence leaks;
+  admin endpoints return 403 for users and 401 for anonymous callers.
+- **Path traversal** — filenames are sanitized (separators, `..`, NUL, control
+  characters rejected with 422); physical paths use generated storage keys,
+  never user input.
+- **Rate limiting** — fixed-window Postgres-backed counters on login,
+  registration, password reset, shares and uploads.
+- **Share links** — cryptographically random tokens, server-enforced expiry
+  and immediate revocation.
+- **Transport/data hygiene** — secrets come from environment variables only;
+  no credentials, tokens, share links or password hashes are ever logged
+  (enforced by code review + CI secret scan).
+
+## Scope
+
+In scope: the application code in this repository, its default configuration
+and the provided Docker setup. Out of scope: vulnerabilities in third-party
+dependencies already fixed upstream, social engineering, and attacks requiring
+root access to the host running Cloud Vault.

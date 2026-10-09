@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Plan')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Subscription</h1>
+
+  <div class="card">
+    <div class="grid cols-3">
+      <div>
+        <div class="stat-label">Current plan</div>
+        <div class="stat-value" th:text="${limits.planCode()}">FREE</div>
+        <div class="small muted" th:if="${current != null}">
+          Status: <span class="pill" th:classappend="'pill-' + ${limits.subscriptionStatus()}"
+                        th:text="${limits.subscriptionStatus()}">ACTIVE</span>
+        </div>
+        <div class="small muted" th:if="${current != null}">
+          Started <span th:text="${T(com.cloudvault.service.Format).date(current.startedAt)}">—</span>
+        </div>
+      </div>
+      <div>
+        <div class="stat-label">Storage</div>
+        <div class="stat-value" th:text="${T(com.cloudvault.service.Format).bytes(limits.usedBytes())}">0 B</div>
+        <div class="small muted">of <span th:text="${T(com.cloudvault.service.Format).bytes(limits.quotaBytes())}">0 B</span></div>
+      </div>
+      <div>
+        <div class="stat-label">Max file size</div>
+        <div class="stat-value" th:text="${T(com.cloudvault.service.Format).bytes(limits.maxFileBytes())}">0 B</div>
+        <div class="small muted">Trash retention: <span th:text="${limits.retentionDays()}">7</span> days</div>
+      </div>
+    </div>
+    <div class="flash flash-error" th:if="${limits.overQuota()}" style="margin-top:1rem">
+      Your account is over quota. Uploads are disabled; downloads, deletes and restores keep working.
+    </div>
+    <p class="small muted" style="margin-top:1rem">
+      Plan changes are applied by an administrator and take effect immediately on the server —
+      features are never decided in the browser.
+    </p>
+  </div>
+
+  <h2 style="margin-top:1.2rem">Available plans</h2>
+  <div class="grid cols-4">
+    <div class="card" th:each="p : ${plans}">
+      <div class="stat-label" th:text="${p.name}">Plan</div>
+      <div class="stat-value" th:text="${T(com.cloudvault.service.Format).bytes(p.storageBytes)}">0 B</div>
+      <ul class="small muted" style="padding-left:1.1rem">
+        <li>Max file: <span th:text="${T(com.cloudvault.service.Format).bytes(p.maxFileBytes)}">0 B</span></li>
+        <li>Sharing: <span th:text="${p.sharingEnabled} ? 'yes' : 'no'">yes</span></li>
+        <li>Versioning: <span th:text="${p.versioningEnabled} ? ('up to ' + ${p.maxVersions} + ' versions') : 'single version'">no</span></li>
+        <li>Trash retention: <span th:text="${p.retentionDays}">7</span> days</li>
+      </ul>
+      <span class="pill pill-active" th:if="${limits.planCode() == p.code}">YOUR PLAN</span>
+    </div>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

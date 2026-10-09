@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin · Users')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <nav class="subnav" aria-label="Admin sections">
+    <a th:href="@{/admin}">Overview</a>
+    <a th:href="@{/admin/users}" class="active">Users</a>
+    <a th:href="@{/admin/storage}">Storage</a>
+    <a th:href="@{/admin/jobs}">Jobs</a>
+    <a th:href="@{/admin/audit}">Audit log</a>
+  </nav>
+  <h1>Users &amp; subscriptions</h1>
+
+  <section class="card table-wrap">
+    <table>
+      <thead>
+      <tr><th>User</th><th>Role</th><th>Account</th><th>Plan / status</th><th>Usage</th>
+        <th>Actions</th></tr>
+      </thead>
+      <tbody>
+      <tr th:each="row : ${users}">
+        <td>
+          <strong th:text="${row[0].username}">user</strong><br>
+          <span class="small muted" th:text="${row[0].email}">email</span>
+        </td>
+        <td>
+          <form th:action="@{/admin/users/{id}/role(id=${row[0].id})}" method="post" class="inline-form">
+            <select name="role" aria-label="Role">
+              <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                      th:selected="${r == row[0].role}">USER</option>
+            </select>
+            <button class="btn btn-sm" type="submit">Set</button>
+          </form>
+        </td>
+        <td>
+          <form th:action="@{/admin/users/{id}/status(id=${row[0].id})}" method="post" class="inline-form">
+            <select name="status" aria-label="Account status">
+              <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                      th:selected="${s == row[0].status}">ACTIVE</option>
+            </select>
+            <button class="btn btn-sm" type="submit">Set</button>
+          </form>
+        </td>
+        <td>
+          <form th:action="@{/admin/users/{id}/plan(id=${row[0].id})}" method="post" class="form-row">
+            <select name="planCode" aria-label="Plan">
+              <option th:each="p : ${plans}" th:value="${p.code}" th:text="${p.code}"
+                      th:selected="${p.code == row[1]}">FREE</option>
+            </select>
+            <select name="subStatus" aria-label="Subscription status">
+              <option th:each="s : ${subStatuses}" th:value="${s}" th:text="${s}"
+                      th:selected="${s.name() == row[2]}">ACTIVE</option>
+            </select>
+            <input name="storageOverride" type="number" min="0" placeholder="Quota bytes (override)"
+                   th:title="'Current quota: ' + ${row[4]}" aria-label="Quota override in bytes">
+            <button class="btn btn-sm" type="submit">Save</button>
+          </form>
+          <div class="small muted" th:text="${row[1]} + ' / ' + ${row[2]}">FREE/ACTIVE</div>
+        </td>
+        <td>
+          <span th:text="${T(com.cloudvault.service.Format).bytes(row[3])}">0 B</span>
+          <span class="muted">/ <span th:text="${T(com.cloudvault.service.Format).bytes(row[4])}">0 B</span></span>
+        </td>
+        <td>
+          <div class="row-actions">
+            <form class="inline-form" th:action="@{/admin/users/{id}/sessions(id=${row[0].id})}" method="post"
+                  data-confirm="Revoke all sessions for this user?">
+              <button class="btn btn-sm" type="submit">Revoke sessions</button>
+            </form>
+            <form class="inline-form" th:action="@{/api/v1/admin/users/{id}/password(id=${row[0].id})}"
+                  method="post">
+              <label class="sr-only" th:for="'pw' + ${row[0].id}">New password</label>
+              <input th:id="'pw' + ${row[0].id}" name="newPassword" type="password"
+                     placeholder="New password (min 10)" minlength="10" required
+                     style="width:auto;display:inline-block" autocomplete="new-password">
+              <button class="btn btn-sm" type="submit"
+                      data-confirm="Set this password and sign the user out everywhere?">Reset password</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="small muted">Quota override: leave empty to use the plan value. Changes apply
+      server-side immediately (uploads re-check quota on every request).</p>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

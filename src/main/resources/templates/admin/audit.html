@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin · Audit')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <nav class="subnav" aria-label="Admin sections">
+    <a th:href="@{/admin}">Overview</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/storage}">Storage</a>
+    <a th:href="@{/admin/jobs}">Jobs</a>
+    <a th:href="@{/admin/audit}" class="active">Audit log</a>
+  </nav>
+  <h1>Audit log</h1>
+
+  <section class="card">
+    <form th:action="@{/admin/audit}" method="get" class="form-row">
+      <div><label for="action">Action</label>
+        <input id="action" name="action" type="text" th:value="${action}" placeholder="FILE_UPLOADED"></div>
+      <div><label for="actor">Actor</label>
+        <input id="actor" name="actor" type="text" th:value="${actor}"></div>
+      <div><button class="btn" type="submit">Filter</button></div>
+    </form>
+  </section>
+
+  <section class="card table-wrap" style="margin-top:1rem">
+    <table>
+      <thead><tr><th>When (UTC)</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th></tr></thead>
+      <tbody>
+      <tr th:each="e : ${entries}">
+        <td class="small" th:text="${T(com.cloudvault.service.Format).dateTime(e.createdAt)}">—</td>
+        <td th:text="${e.actorUsername != null ? e.actorUsername : 'system'}">actor</td>
+        <td class="mono" th:text="${e.action}">ACTION</td>
+        <td class="small" th:text="${e.targetType != null ? e.targetType + ':' + e.targetId : '—'}">—</td>
+        <td class="small" th:text="${e.details != null ? e.details : '—'}">—</td>
+        <td class="small muted" th:text="${e.ipAddress != null ? e.ipAddress : '—'}">ip</td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="muted" th:if="${entries.isEmpty()}">No entries match.</p>
+    <div class="actions" style="margin-top:.8rem">
+      <a class="btn btn-sm" th:if="${page > 0}" th:href="@{/admin/audit(page=${page - 1}, action=${action}, actor=${actor})}">← Previous</a>
+      <span class="small muted">Page <span th:text="${page} + 1">1</span> of <span th:text="${totalPages}">1</span></span>
+      <a class="btn btn-sm" th:if="${page + 1 < totalPages}"
+         th:href="@{/admin/audit(page=${page + 1}, action=${action}, actor=${actor})}">Next →</a>
+    </div>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

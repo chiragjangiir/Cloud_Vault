@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Trash')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Trash</h1>
+  <p class="muted small">Items in trash are kept for
+    <span th:text="${limits.retentionDays()}">7</span> days (your plan's retention), then permanently
+    deleted by the background cleanup job. Permanent deletion removes the physical objects and
+    releases quota.</p>
+
+  <section class="card" aria-labelledby="tf-h">
+    <h2 id="tf-h">Trashed files</h2>
+    <div class="table-wrap" th:if="${!trashedFiles.isEmpty()}">
+      <table>
+        <thead><tr><th>Name</th><th>Size</th><th>Deleted</th><th>Retention until</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="f : ${trashedFiles}">
+          <td th:text="${f.name}">file</td>
+          <td th:text="${T(com.cloudvault.service.Format).bytes(f.sizeBytes)}">0 B</td>
+          <td th:text="${T(com.cloudvault.service.Format).dateTime(f.deletedAt)}">—</td>
+          <td th:text="${T(com.cloudvault.service.Format).dateTime(f.retentionUntil)}">—</td>
+          <td>
+            <div class="row-actions">
+              <form class="inline-form" th:action="@{/app/files/{id}/restore(id=${f.id})}" method="post">
+                <button class="btn btn-sm" type="submit">Restore</button>
+              </form>
+              <form class="inline-form" th:action="@{/app/files/{id}/purge(id=${f.id})}" method="post"
+                    data-confirm="Permanently delete this file? This cannot be undone.">
+                <button class="btn btn-sm btn-danger" type="submit">Delete forever</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" th:if="${trashedFiles.isEmpty()}">No files in trash.</p>
+  </section>
+
+  <section class="card" style="margin-top:1rem" aria-labelledby="td-h">
+    <h2 id="td-h">Trashed folders</h2>
+    <div class="table-wrap" th:if="${!trashedFolders.isEmpty()}">
+      <table>
+        <thead><tr><th>Name</th><th>Deleted</th><th>Retention until</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="f : ${trashedFolders}">
+          <td th:text="${f.name}">folder</td>
+          <td th:text="${T(com.cloudvault.service.Format).dateTime(f.deletedAt)}">—</td>
+          <td th:text="${T(com.cloudvault.service.Format).dateTime(f.retentionUntil)}">—</td>
+          <td>
+            <form class="inline-form" th:action="@{/app/folders/{id}/restore(id=${f.id})}" method="post">
+              <button class="btn btn-sm" type="submit">Restore</button>
+            </form>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" th:if="${trashedFolders.isEmpty()}">No folders in trash.</p>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

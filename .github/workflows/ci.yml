@@ -1,0 +1,135 @@
+# ===========================================================================
+# Cloud Vault — CI (§52)
+# A green run means the build REALLY passed:
+#   1. compile            — mvn compile
+#   2. tests              — mvn test  (unit + integration against real PostgreSQL)
+#   3. package            — mvn -DskipTests package
+#   4. end-to-end         — boot the real JAR and run scripts/e2e.sh (§56)
+#   5. security checks    — secret/credential scan + zero-dummy marker audit (§74)
+# ===========================================================================
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cloudvault
+          POSTGRES_PASSWORD: cloudvault
+          POSTGRES_DB: cloudvault_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cloudvault -d cloudvault_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: "5432"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: 1. Compile
+        run: mvn -B --no-transfer-progress -DskipTests compile
+
+      - name: 2. Unit + integration tests (real PostgreSQL, real filesystem)
+        run: mvn -B --no-transfer-progress test
+
+      - name: 3. Package
+        run: mvn -B --no-transfer-progress -DskipTests package
+
+      - name: 4. Create application database
+        run: |
+          # GitHub runners do not guarantee a psql client
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          PGPASSWORD=cloudvault psql -h localhost -U cloudvault -d cloudvault_test \
+            -c "CREATE DATABASE cloudvault OWNER cloudvault"
+
+      - name: 5. Start application and wait for health
+        run: |
+          STORAGE_ROOT="$PWD/data/storage" \
+          DB_URL=jdbc:postgresql://localhost:5432/cloudvault \
+          DB_USER=cloudvault \
+          DB_PASSWORD=cloudvault \
+          ADMIN_USERNAME=admin \
+          ADMIN_PASSWORD='Admin!Pass123' \
+          APP_PUBLIC_URL=http://localhost:8080 \
+          java -jar target/cloud-vault-1.0.0-SNAPSHOT.jar > app.log 2>&1 &
+          echo $! > app.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/actuator/health; then echo " healthy"; break; fi
+            sleep 2
+          done
+          curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"'
+
+      - name: 6. End-to-end acceptance suite (§56)
+        run: |
+          STORAGE_ROOT="$PWD/data/storage" \
+          DB_URL=jdbc:postgresql://localhost:5432/cloudvault \
+          DB_USER=cloudvault \
+          DB_PASSWORD=cloudvault \
+          BASE_URL=http://localhost:8080 \
+          bash scripts/e2e.sh
+
+      - name: 7. Stop application
+        if: always()
+        run: |
+          if [ -f app.pid ]; then kill "$(cat app.pid)" || true; fi
+          if [ -f app.log ]; then tail -n 200 app.log || true; fi
+
+      - name: 8. Security checks — no committed secrets
+        run: |
+          set -euo pipefail
+          # Real credentials must never appear in the repository (§59, §62)
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "::error::.env is tracked by git"; exit 1
+          fi
+          # Scan tracked source for private keys and hardcoded credentials
+          if git grep -nE 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' -- ':!*.md' ':!docs/*'; then
+            echo "::error::private key material found in the repository"; exit 1
+          fi
+          if git grep -nEi '(password|secret|api[_-]?key)\s*[:=]\s*["'\''][^"'\'']{8,}["'\'']' \
+              -- 'src/main/*' | grep -Ev 'change-?me|example|System\.getenv|\\$\{|passwordEncoder|password_hash|hashedPassword'; then
+            echo "::error::possible hardcoded credential in src/main"; exit 1
+          fi
+          echo "secret scan passed"
+
+      - name: 9. Zero-dummy marker audit (§74)
+        run: |
+          set -euo pipefail
+          # These markers must never appear in production sources/UI.
+          # (HTML form `placeholder=` attributes are legitimate UI hints.)
+          if git grep -nE '\b(TODO|FIXME|MOCK_DATA|SAMPLE_DATA|Coming Soon|not implemented)\b' \
+              -- 'src/main/*'; then
+            echo "::error::dummy/unfinished marker found in production code"; exit 1
+          fi
+          echo "zero-dummy audit passed"
+
+      - name: 10. Upload reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            target/surefire-reports/**
+            app.log
+          if-no-files-found: ignore

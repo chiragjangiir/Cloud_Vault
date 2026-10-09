@@ -1,0 +1,53 @@
+# ===========================================================================
+# Cloud Vault — Docker deployment (§49)
+#
+#   cp .env.example .env      # then edit secrets
+#   docker compose up -d --build
+#
+# Nothing here hardcodes a machine-specific path: the host-side storage
+# directory comes from .env (STORAGE_HOST_PATH) and defaults to ./data/storage.
+# ===========================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cloudvault}
+      POSTGRES_USER: ${POSTGRES_USER:-cloudvault}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  cloudvault:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cloudvault}
+      DB_USER: ${POSTGRES_USER:-cloudvault}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      STORAGE_ROOT: /data/storage
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:8080}
+      TRASH_RETENTION_DAYS: ${TRASH_RETENTION_DAYS:-30}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-10}
+      RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-10}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10GB}
+      JAVA_OPTS: ${JAVA_OPTS:--Xmx512m}
+    volumes:
+      # Real host storage, mounted into the container (§2, §49)
+      - ${STORAGE_HOST_PATH:-./data/storage}:/data/storage
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

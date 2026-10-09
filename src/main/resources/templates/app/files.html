@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Files')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1 th:text="'Files · ' + ${view.current().name}">Files</h1>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a th:href="@{/app/files}">Home</a>
+    <th:block th:each="crumb : ${view.breadcrumbs()}">
+      <span aria-hidden="true">/</span>
+      <a th:if="${!crumbStat.last}"
+         th:href="@{/app/files(folderId=${crumb.id})}"
+         th:text="${crumb.name}">folder</a>
+      <span th:if="${crumbStat.last}" th:text="${crumb.name}" aria-current="page">current</span>
+    </th:block>
+  </nav>
+
+  <div class="flash flash-error" th:if="${limits.overQuota()}">
+    You are over quota: uploads are disabled until usage falls below
+    <span th:text="${T(com.cloudvault.service.Format).bytes(limits.quotaBytes())}">0 B</span>.
+    You can still download, delete and restore.
+  </div>
+
+  <div class="card" id="upload-zone">
+    <p class="muted small">Drag files here or
+      <label for="upload-input" style="display:inline;color:var(--accent);cursor:pointer">choose files</label>.
+      Maximum file size: <span th:text="${T(com.cloudvault.service.Format).bytes(limits.maxFileBytes())}">0 B</span>.
+      Progress shows actual bytes transferred.
+    </p>
+    <input id="upload-input" type="file" multiple hidden
+           th:attr="data-folder-id=${view.current().id}"
+           th:disabled="${limits.overQuota()}">
+    <p class="small muted" th:if="${limits.overQuota()}">Uploads disabled (over quota).</p>
+    <ul class="upload-list" id="upload-list" aria-live="polite"></ul>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:1rem">
+    <section class="card" aria-labelledby="folders-h">
+      <h2 id="folders-h">Folders</h2>
+      <form th:action="@{/app/folders}" method="post" class="form-row" style="margin-bottom:.7rem">
+        <div><label for="new-folder" class="sr-only">New folder name</label>
+          <input id="new-folder" name="name" type="text" placeholder="New folder name" required maxlength="255"></div>
+        <input type="hidden" name="parentId" th:value="${view.current().id}">
+        <div><button class="btn btn-primary" type="submit">Create folder</button></div>
+      </form>
+      <ul style="list-style:none;padding:0;margin:0" th:if="${!view.folders().isEmpty()}">
+        <li th:each="f : ${view.folders()}" class="notif" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+          <span aria-hidden="true">📁</span>
+          <a th:href="@{/app/files(folderId=${f.id})}" th:text="${f.name}"
+             style="flex:1 1 auto;text-decoration:none">folder</a>
+          <details class="dropdown">
+            <summary class="btn btn-sm" aria-label="Actions">⋯</summary>
+            <div class="dropdown-menu">
+              <form th:action="@{/app/folders/{id}/rename(id=${f.id})}" method="post" class="form-row">
+                <input type="hidden" name="parentId" th:value="${view.current().id}">
+                <input name="name" type="text" value="" th:placeholder="${f.name}" required aria-label="New name">
+                <button class="btn btn-sm" type="submit">Rename</button>
+              </form>
+              <form th:action="@{/app/folders/{id}/move(id=${f.id})}" method="post" class="form-row">
+                <input type="hidden" name="parentId" th:value="${view.current().id}">
+                <select name="targetParentId" aria-label="Destination">
+                  <option value="">Home (root)</option>
+                  <option th:each="dest : ${allFolders}" th:if="${dest.id != f.id}"
+                          th:value="${dest.id}" th:text="${dest.name}">dest</option>
+                </select>
+                <button class="btn btn-sm" type="submit">Move</button>
+              </form>
+              <form th:action="@{/app/folders/{id}/delete(id=${f.id})}" method="post"
+                    data-confirm="Move this folder and everything inside it to trash?">
+                <input type="hidden" name="parentId" th:value="${view.current().id}">
+                <button class="btn btn-sm danger" type="submit">Move to trash</button>
+              </form>
+            </div>
+          </details>
+        </li>
+      </ul>
+      <p class="muted small" th:if="${view.folders().isEmpty()}">No subfolders.</p>
+    </section>
+
+    <section class="card" aria-labelledby="files-h">
+      <h2 id="files-h">Files</h2>
+      <form th:action="@{/app/search}" method="get" class="form-row" style="margin-bottom:.7rem">
+        <div><label for="q" class="sr-only">Search files</label>
+          <input id="q" name="q" type="search" placeholder="Search by name…" th:value="${q}"></div>
+        <div><button class="btn" type="submit">Search</button></div>
+      </form>
+
+      <div class="table-wrap" th:if="${!view.files().isEmpty()}">
+        <table>
+          <thead><tr><th>Name</th><th>Size</th><th>Type</th><th>Updated</th><th></th></tr></thead>
+          <tbody>
+          <tr th:each="f : ${view.files()}">
+            <td><span class="file-icon" aria-hidden="true">📄</span>
+              <a th:href="@{/app/files/{id}/download(id=${f.id})}" th:text="${f.name}">file</a></td>
+            <td th:text="${T(com.cloudvault.service.Format).bytes(f.sizeBytes)}">0 B</td>
+            <td class="hide-sm small" th:text="${f.contentType}">type</td>
+            <td class="hide-sm" th:text="${T(com.cloudvault.service.Format).dateTime(f.updatedAt)}">—</td>
+            <td>
+              <div class="row-actions">
+                <a class="btn btn-sm" th:href="@{/app/files/{id}/download(id=${f.id})}">Download</a>
+                <details class="dropdown">
+                  <summary class="btn btn-sm" aria-label="More actions for file">⋯</summary>
+                  <div class="dropdown-menu">
+                    <form th:action="@{/app/files/{id}/rename(id=${f.id})}" method="post" class="form-row">
+                      <input type="hidden" name="parentId" th:value="${view.current().id}">
+                      <input name="name" type="text" th:placeholder="${f.name}" required aria-label="New name">
+                      <button class="btn btn-sm" type="submit">Rename</button>
+                    </form>
+                    <form th:action="@{/app/files/{id}/move(id=${f.id})}" method="post" class="form-row">
+                      <input type="hidden" name="parentId" th:value="${view.current().id}">
+                      <select name="targetFolderId" aria-label="Destination folder">
+                        <option value="">Home (root)</option>
+                        <option th:each="dest : ${allFolders}" th:value="${dest.id}"
+                                th:text="${dest.name}">dest</option>
+                      </select>
+                      <button class="btn btn-sm" type="submit">Move</button>
+                    </form>
+                    <form th:action="@{/app/shares}" method="post">
+                      <input type="hidden" name="fileId" th:value="${f.id}">
+                      <input type="hidden" name="type" value="PUBLIC_LINK">
+                      <input type="hidden" name="permission" value="DOWNLOAD">
+                      <button class="btn btn-sm" type="submit"
+                              th:disabled="${!limits.sharingEnabled()}">Create share link</button>
+                    </form>
+                    <form th:action="@{/app/files/{id}/delete(id=${f.id})}" method="post"
+                          data-confirm="Move this file to trash?">
+                      <input type="hidden" name="parentId" th:value="${view.current().id}">
+                      <button class="btn btn-sm danger" type="submit">Move to trash</button>
+                    </form>
+                  </div>
+                </details>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" th:if="${view.files().isEmpty()}">No files in this folder.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

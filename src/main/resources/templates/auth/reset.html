@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Reset password')}"></head>
+<body>
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <a class="brand" th:href="@{/}">Cloud Vault</a>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form th:action="@{/reset-password}" method="post">
+      <div class="field">
+        <label for="token">Reset token</label>
+        <input id="token" name="token" type="text" th:value="${token}" required>
+      </div>
+      <div class="field">
+        <label for="password">New password (min 10 characters)</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="10" required>
+      </div>
+      <div class="field">
+        <label for="confirmPassword">Confirm new password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%">Update password</button>
+    </form>
+    <p class="auth-alt"><a th:href="@{/login}">Back to sign in</a></p>
+  </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

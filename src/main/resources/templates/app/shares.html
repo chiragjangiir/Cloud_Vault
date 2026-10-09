@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Shares')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <h1>Shares</h1>
+  <p class="muted small" th:if="${!limits.sharingEnabled()}">Your plan does not include sharing.</p>
+
+  <section class="card" aria-labelledby="create-h">
+    <h2 id="create-h">Share a file</h2>
+    <form th:action="@{/app/shares}" method="post" class="form-row">
+      <div>
+        <label for="fileId">File ID</label>
+        <input id="fileId" name="fileId" type="number" min="1" required>
+        <span class="small muted">Open the Files page and copy the file's ID from its download link.</span>
+      </div>
+      <div>
+        <label for="type">Type</label>
+        <select id="type" name="type">
+          <option value="PUBLIC_LINK">Public link</option>
+          <option value="USER_SHARE">Share with user</option>
+        </select>
+      </div>
+      <div>
+        <label for="recipient">Recipient username (user shares)</label>
+        <input id="recipient" name="recipient" type="text">
+      </div>
+      <div>
+        <label for="permission">Permission</label>
+        <select id="permission" name="permission">
+          <option th:each="p : ${permValues}" th:value="${p}" th:text="${p}">VIEW</option>
+        </select>
+      </div>
+      <div>
+        <label for="expiresAt">Expires (optional)</label>
+        <input id="expiresAt" name="expiresAt" type="datetime-local">
+      </div>
+      <div>
+        <button class="btn btn-primary" type="submit" th:disabled="${!limits.sharingEnabled()}">Create share</button>
+      </div>
+    </form>
+    <p class="small muted">Expiration and revocation are enforced server-side: expired or revoked
+      links return 403 immediately.</p>
+  </section>
+
+  <div class="grid cols-2" style="margin-top:1rem">
+    <section class="card" aria-labelledby="owned-h">
+      <h2 id="owned-h">Links you created</h2>
+      <div class="table-wrap" th:if="${!owned.isEmpty()}">
+        <table>
+          <thead><tr><th>File</th><th>Type</th><th>Perm</th><th>Status</th><th>Downloads</th><th></th></tr></thead>
+          <tbody>
+          <tr th:each="s : ${owned}">
+            <td th:text="${s.file.name}">file</td>
+            <td th:text="${s.type}">PUBLIC_LINK</td>
+            <td th:text="${s.permission}">VIEW</td>
+            <td>
+              <span class="pill"
+                    th:classappend="'pill-' + ${#strings.toLowerCase(s.statusName)}"
+                    th:text="${s.statusName}">ACTIVE</span>
+            </td>
+            <td th:text="${s.downloadCount}">0</td>
+            <td>
+              <div class="row-actions">
+                <a class="btn btn-sm" th:if="${s.token != null and s.revokedAt == null}"
+                   th:href="@{/share/{token}(token=${s.token})}">Open link</a>
+                <form class="inline-form" th:action="@{/app/shares/{id}/revoke(id=${s.id})}" method="post"
+                      data-confirm="Revoke this share? The link stops working immediately.">
+                  <button class="btn btn-sm btn-danger" type="submit"
+                          th:disabled="${s.revokedAt != null}">Revoke</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" th:if="${owned.isEmpty()}">No shares yet.</p>
+    </section>
+
+    <section class="card" aria-labelledby="inc-h">
+      <h2 id="inc-h">Shared with you</h2>
+      <div class="table-wrap" th:if="${!incoming.isEmpty()}">
+        <table>
+          <thead><tr><th>File</th><th>From</th><th>Permission</th><th></th></tr></thead>
+          <tbody>
+          <tr th:each="s : ${incoming}">
+            <td th:text="${s.file.name}">file</td>
+            <td th:text="${s.owner.username}">owner</td>
+            <td th:text="${s.permission}">VIEW</td>
+            <td><a class="btn btn-sm" th:href="@{/app/files/{id}/download(id=${s.file.id})}">Download</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" th:if="${incoming.isEmpty()}">Nothing shared with you yet.</p>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin · Jobs')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+  <div th:replace="~{fragments/layout :: flash}"></div>
+  <nav class="subnav" aria-label="Admin sections">
+    <a th:href="@{/admin}">Overview</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/storage}">Storage</a>
+    <a th:href="@{/admin/jobs}" class="active">Jobs</a>
+    <a th:href="@{/admin/audit}">Audit log</a>
+  </nav>
+  <h1>Background jobs</h1>
+  <p class="muted small">States and progress come from the job records themselves —
+    processed/total objects and bytes. Nothing is simulated. This page refreshes via the browser
+    reload button.</p>
+
+  <section class="card table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Type</th><th>State</th><th>Progress</th><th>Bytes</th>
+        <th>Created</th><th>Duration</th><th>Error / report</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="j : ${jobs}">
+        <td th:text="${j.id}">1</td>
+        <td th:text="${j.type}">TYPE</td>
+        <td><span class="pill" th:classappend="'pill-' + ${#strings.toLowerCase(j.state.name)}"
+                  th:text="${j.state}">QUEUED</span></td>
+        <td>
+          <div class="progress" role="progressbar"
+               th:attr="aria-valuenow=${fmt.percentNumber(j.progressProcessed, j.progressTotal)}">
+            <div th:style="'width:' + ${fmt.percentNumber(j.progressProcessed, j.progressTotal)} + '%'"></div>
+          </div>
+          <span class="small muted" th:text="${j.progressProcessed} + ' / ' + ${j.progressTotal}">0/0</span>
+        </td>
+        <td class="small muted"
+            th:text="${fmt.bytes(j.bytesProcessed)} + ' / ' + ${fmt.bytes(j.bytesTotal)}">0/0</td>
+        <td class="small" th:text="${fmt.dateTime(j.createdAt)}">—</td>
+        <td class="small muted">
+          <th:block th:if="${j.startedAt != null and j.completedAt != null}">
+            <span th:text="${#strings.replace(#strings.replace(#strings.substring(j.completedAt.toString(), 11, 19), '', ''), '', '')}">end</span>
+          </th:block>
+          <th:block th:if="${j.startedAt == null}">not started</th:block>
+        </td>
+        <td class="small" style="max-width:340px">
+          <details th:if="${j.errorMessage != null or j.payload != null}">
+            <summary>Details</summary>
+            <pre class="mono" style="white-space:pre-wrap"
+                 th:text="${j.errorMessage != null ? j.errorMessage : j.payload}">details</pre>
+          </details>
+        </td>
+        <td>
+          <form class="inline-form" th:action="@{/admin/jobs/{id}/cancel(id=${j.id})}" method="post"
+                th:if="${j.state.name() == 'QUEUED'}">
+            <button class="btn btn-sm btn-danger" type="submit">Cancel</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
