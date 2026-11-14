@@ -44,4 +44,12 @@ class FormatTest {
         assertEquals("2020-01-01", Format.date(Instant.parse("2020-01-01T12:34:56Z")));
         assertTrue(Format.dateTime(Instant.now()).matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}"));
     }
+
+    @Test
+    void formatsTransferRateCorrectly() {
+        assertEquals("0 B/s", Format.transferRate(0, 1.0));
+        assertEquals("0 B/s", Format.transferRate(100, 0.0));
+        assertEquals("1.00 MB/s", Format.transferRate(1024L * 1024L, 1.0));
+        assertEquals("512 KB/s", Format.transferRate(1024L * 1024L, 2.0));
+    }
 }
