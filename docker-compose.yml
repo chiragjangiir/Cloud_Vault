@@ -47,6 +47,12 @@ services:
     volumes:
       # Real host storage, mounted into the container (§2, §49)
       - ${STORAGE_HOST_PATH:-./data/storage}:/data/storage
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
     restart: unless-stopped
 
 volumes:
