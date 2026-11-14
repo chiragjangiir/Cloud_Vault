@@ -269,4 +269,14 @@ public class StorageLocationService {
         loc.setStatus(StorageLocation.Status.DISABLED);
         repo.save(loc);
     }
+
+    public static double calculateUtilizationPercentage(long usedBytes, long totalBytes) {
+        if (totalBytes <= 0 || usedBytes <= 0) {
+            return 0.0;
+        }
+        if (usedBytes >= totalBytes) {
+            return 100.0;
+        }
+        return Math.round((double) usedBytes / totalBytes * 10000.0) / 100.0;
+    }
 }
