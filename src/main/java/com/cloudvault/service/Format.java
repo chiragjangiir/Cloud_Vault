@@ -46,4 +46,11 @@ public final class Format {
         if (total <= 0) return 0;
         return Math.min(100.0, Math.max(0.0, (used * 100.0) / total));
     }
+
+    /** Formats a byte count transferred over seconds into transfer rate (e.g., "1.25 MB/s"). */
+    public static String transferRate(long bytesTransferred, double seconds) {
+        if (bytesTransferred <= 0 || seconds <= 0.0) return "0 B/s";
+        long bytesPerSec = (long) (bytesTransferred / seconds);
+        return bytes(bytesPerSec) + "/s";
+    }
 }
