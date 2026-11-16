@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-vault-api
+  labels:
+    app: cloud-vault
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloud-vault
+  template:
+    metadata:
+      labels:
+        app: cloud-vault
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/chiragjangiir/cloud-vault:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
