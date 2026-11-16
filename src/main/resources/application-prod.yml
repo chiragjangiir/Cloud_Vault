@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+server:
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
