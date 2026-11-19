@@ -7,9 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ObjectMetadataSanitizerTest {
     @Test
     void testSanitizer() {
-        assertEquals("value with space", ObjectMetadataSanitizer.sanitizeValue("value
-with
-space"));
+        String input = "value" + "\r\n" + "with" + "\n" + "space";
+        assertEquals("value with space", ObjectMetadataSanitizer.sanitizeValue(input));
         assertEquals("", ObjectMetadataSanitizer.sanitizeValue(null));
     }
 }
