@@ -2,18 +2,18 @@ package com.cloudvault.service;
 
 import java.util.Map;
 
-public class ObjectMetadataValidator {
-    public static final int MAX_KEY_LENGTH = 128;
-    public static final int MAX_VALUE_LENGTH = 2048;
+public final class ObjectMetadataValidator {
+    public static final int MAX_METADATA_BYTES = 2048; // 2KB S3 limit
 
-    public static boolean isValidMetadata(Map<String, String> metadata) {
-        if (metadata == null) return true;
-        for (Map.Entry<String, String> entry : metadata.entrySet()) {
-            String k = entry.getKey();
-            String v = entry.getValue();
-            if (k == null || k.isEmpty() || k.length() > MAX_KEY_LENGTH) return false;
-            if (v != null && v.length() > MAX_VALUE_LENGTH) return false;
+    private ObjectMetadataValidator() {}
+
+    public static boolean isWithinSizeLimit(Map<String, String> userMetadata) {
+        if (userMetadata == null) return true;
+        int totalBytes = 0;
+        for (Map.Entry<String, String> entry : userMetadata.entrySet()) {
+            if (entry.getKey() != null) totalBytes += entry.getKey().getBytes().length;
+            if (entry.getValue() != null) totalBytes += entry.getValue().getBytes().length;
         }
-        return true;
+        return totalBytes <= MAX_METADATA_BYTES;
     }
 }

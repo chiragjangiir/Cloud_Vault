@@ -5,14 +5,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ObjectMetadataValidatorTest {
+class ObjectMetadataValidatorTest {
     @Test
-    void testValidMetadata() {
-        assertTrue(ObjectMetadataValidator.isValidMetadata(Map.of("project", "cloudvault", "author", "chirag")));
-    }
-
-    @Test
-    void testRejectEmptyKey() {
-        assertFalse(ObjectMetadataValidator.isValidMetadata(Map.of("", "val")));
+    void testMetadataSize() {
+        assertTrue(ObjectMetadataValidator.isWithinSizeLimit(Map.of("author", "john", "version", "1")));
+        assertFalse(ObjectMetadataValidator.isWithinSizeLimit(Map.of("data", "x".repeat(2050))));
     }
 }
